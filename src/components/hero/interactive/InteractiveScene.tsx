@@ -1,0 +1,538 @@
+"use client";
+
+import { Suspense, useEffect, useMemo, useRef, type RefObject } from "react";
+import * as THREE from "three";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Environment, Lightformer } from "@react-three/drei";
+import { buildRibbonGeometry } from "../../mark/markGeometry";
+import {
+  BLUE_SEGMENT,
+  WHITE_SEGMENT,
+  createEnergyUniforms,
+  createGlowTexture,
+  patchEnergyShader,
+  pointOnAxis,
+  ribbonAxis,
+  type EnergyUniforms,
+  type RibbonAxis,
+} from "../../mark/markEffects";
+import {
+  clamp01,
+  easeInOutSine,
+  easeOutCubic,
+  smoothDamp,
+} from "../../mark/motion";
+import { useMarkContours } from "../../mark/useMarkContours";
+import { AMPLITUDE, TIMING, type InteractionInput, type ResponseStrength } from "./interactionConfig";
+import { MOVES, createShuffleBag, type MoveId } from "./moves";
+import { FOV, fitMetrics } from "./layout";
+
+const deg = THREE.MathUtils.degToRad;
+
+/*
+ * Geometry: deeper than the Task 01-03 slab so a 10-15° turn reads as a solid
+ * object. The bevel is inset (see buildRibbonGeometry), so the outer
+ * silhouette stays exactly on the traced contour at any depth/bevel.
+ */
+const GEOMETRY = { depth: 0.3, bevel: 0.03, smoothing: true };
+const SILHOUETTE_Z = GEOMETRY.depth / 2;
+
+const GLOW = { color: "#2f6bff", softness: 40, strength: 0.4, whiteAlpha: 0.22 };
+const SHADOW = { softness: 12, opacity: 0.55, offset: new THREE.Vector2(0.05, -0.09) };
+
+export interface InteractiveSceneProps {
+  input: RefObject<InteractionInput>;
+  /** Gives the DOM side a way to request a frame; returns an unregister. */
+  registerWake: (wake: () => void) => () => void;
+  response: ResponseStrength;
+  /** Reduced motion: no arrival/idle/tilt/spin; clicks give a light pulse. */
+  reducedMotion: boolean;
+  /** Overlay comparison: hold the exact resting front pose. */
+  holdFront: boolean;
+  paused: boolean;
+  /** Called once when a click move starts (preview panel feedback). */
+  onMoveStart?: (id: MoveId) => void;
+  lowPower: boolean;
+  onReady: () => void;
+}
+
+type RibbonFx = { axis: RibbonAxis; energy: EnergyUniforms };
+
+function Sculpture({
+  input,
+  registerWake,
+  response,
+  reducedMotion,
+  holdFront,
+  paused,
+  lowPower,
+  onReady,
+  onMoveStart,
+}: InteractiveSceneProps) {
+  const contours = useMarkContours();
+  const invalidate = useThree((s) => s.invalidate);
+  const get = useThree((s) => s.get);
+  const size = useThree((s) => s.size);
+  const { worldPerPx } = fitMetrics(size.width, size.height, contours, SILHOUETTE_Z);
+
+  const geometries = useMemo(
+    () =>
+      contours.ribbons.map((ribbon) => ({
+        ribbon,
+        geometry: buildRibbonGeometry(ribbon, contours, { ...GEOMETRY, bevelSegments: lowPower ? 4 : 6 }),
+      })),
+    [contours, lowPower],
+  );
+  useEffect(() => () => geometries.forEach(({ geometry }) => geometry.dispose()), [geometries]);
+
+  const glow = useMemo(
+    () => createGlowTexture(contours, GLOW.color, GLOW.softness, GLOW.whiteAlpha),
+    [contours],
+  );
+  const shadow = useMemo(() => createGlowTexture(contours, "#000000", SHADOW.softness, 1), [contours]);
+  useEffect(
+    () => () => {
+      glow.texture.dispose();
+      shadow.texture.dispose();
+    },
+    [glow, shadow],
+  );
+
+  // Shader uniforms are mutated every frame, so they live in a ref.
+  const fxRef = useRef<Record<string, RibbonFx> | null>(null);
+  if (fxRef.current === null) {
+    const out: Record<string, RibbonFx> = {};
+    for (const ribbon of contours.ribbons) {
+      const axis = ribbonAxis(ribbon, contours);
+      const energy = createEnergyUniforms(axis, ribbon.id === "blue-ribbon" ? BLUE_SEGMENT : WHITE_SEGMENT);
+      energy.uEnergyCount.value = 1;
+      energy.uEnergyWidth.value = 0.06;
+      if (ribbon.id === "white-ribbon") energy.uEnergyColor.value.set("#dbe7ff");
+      out[ribbon.id] = { axis, energy };
+    }
+    fxRef.current = out;
+  }
+
+  // Scene graph refs. Nesting keeps the transforms independent:
+  // outer = parallax/float/hover lift, tilt = cursor/drag/keys/idle,
+  // spin = click animation.
+  const outer = useRef<THREE.Group>(null);
+  const tilt = useRef<THREE.Group>(null);
+  const moveGroup = useRef<THREE.Group>(null);
+  const glowMesh = useRef<THREE.Mesh>(null);
+  const glowMat = useRef<THREE.MeshBasicMaterial>(null);
+  const shadowMesh = useRef<THREE.Mesh>(null);
+  const shadowMat = useRef<THREE.MeshBasicMaterial>(null);
+  const whiteMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const blueMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const rimLight = useRef<THREE.DirectionalLight>(null);
+  const sweepLight = useRef<THREE.DirectionalLight>(null);
+  const pulseLight = useRef<THREE.PointLight>(null);
+
+  // Animation state: mutable, never in React state.
+  const s = useRef({
+    t: 0,
+    arrivalStart: 0,
+    arrivalPulsed: false,
+    yaw: 0,
+    pitch: 0,
+    yawV: { v: 0 },
+    pitchV: { v: 0 },
+    px: 0,
+    py: 0,
+    pxV: { v: 0 },
+    pyV: { v: 0 },
+    drag: 0,
+    dragV: { v: 0 },
+    hover: 0,
+    hoverV: { v: 0 },
+    move: null as MoveId | null,
+    lastMove: null as MoveId | null,
+    moveStart: 0,
+    moveQuat: new THREE.Quaternion(),
+    frontNormal: new THREE.Vector3(),
+    bag: createShuffleBag(),
+    /** Energy pulse already launched within the current move. */
+    movePulsed: false,
+    roll: 0,
+    rollV: { v: 0 },
+    cooldownUntil: 0,
+    spinConsumed: 0,
+    resetConsumed: 0,
+    pulseStart: -1,
+    flash: 0,
+  });
+
+  useEffect(() => {
+    // Requests made before mount are not replayed.
+    s.current.spinConsumed = input.current.spinRequests;
+    s.current.resetConsumed = input.current.resetRequests;
+    const unregister = registerWake(() => invalidate());
+    onReady();
+    invalidate();
+    return unregister;
+  }, [input, registerWake, invalidate, onReady]);
+
+  useEffect(() => {
+    invalidate();
+  }, [response, reducedMotion, holdFront, paused, invalidate]);
+
+  useFrame((_, rawDelta) => {
+    const st = s.current;
+    const inp = input.current;
+    const dt = Math.min(rawDelta, 1 / 20);
+    st.t += dt;
+    const t = st.t;
+    const still = reducedMotion || holdFront;
+
+    // Reset: replay arrival from a clean state.
+    if (inp.resetRequests !== st.resetConsumed) {
+      st.resetConsumed = inp.resetRequests;
+      st.spinConsumed = inp.spinRequests;
+      st.arrivalStart = t;
+      st.arrivalPulsed = false;
+      st.move = null;
+      st.pulseStart = -1;
+      st.flash = 0;
+    }
+
+    // --- Arrival -----------------------------------------------------------
+    const arrival = reducedMotion ? 1 : easeOutCubic(clamp01((t - st.arrivalStart) / TIMING.arrivalSeconds));
+    const away = holdFront ? 0 : 1 - arrival;
+    if (!st.arrivalPulsed && arrival >= TIMING.arrivalPulseAt && !reducedMotion) {
+      st.arrivalPulsed = true;
+      st.pulseStart = t;
+    }
+
+    // --- Click manoeuvre -------------------------------------------------------
+    // One move at a time: requests during a move (and a short cooldown after)
+    // are dropped, never queued. Explicit requests (preview panel) name a
+    // move; ordinary clicks draw the next one from the shuffle bag.
+    if (inp.spinRequests !== st.spinConsumed) {
+      st.spinConsumed = inp.spinRequests;
+      const requested = inp.requestedMove;
+      if (st.move === null && t >= st.cooldownUntil && !holdFront) {
+        if (reducedMotion) {
+          st.flash = 1; // no movement: a brief illumination instead
+        } else {
+          const id = requested === "replay" ? (st.lastMove ?? st.bag.next()) : (requested ?? st.bag.next());
+          st.move = id;
+          st.lastMove = id;
+          st.moveStart = t; // starts on this frame
+          st.movePulsed = false;
+          onMoveStart?.(id);
+        }
+      }
+    }
+    let surge = 0; // glow boost: rises at once, fades out by the end
+    let crest = 0; // lift/scale envelope
+    let accent = 0; // closing blue-light accent
+    let crestScale = 0;
+    let crestForward = 0;
+    if (st.move !== null) {
+      const def = MOVES[st.move];
+      const p = clamp01((t - st.moveStart) / def.seconds);
+      def.rotation(p, st.moveQuat);
+      surge = Math.sin(Math.PI * Math.pow(p, 0.55));
+      crest = def.crest(p);
+      accent = def.accent(p);
+      crestScale = def.crestScale;
+      crestForward = def.crestForward;
+      if (!st.movePulsed && p >= def.pulseAt) {
+        st.movePulsed = true;
+        st.pulseStart = t; // energy pulse sweeps through as it comes round
+      }
+      if (p >= 1) {
+        st.move = null;
+        surge = crest = accent = 0;
+        st.cooldownUntil = t + TIMING.clickCooldownSeconds;
+      }
+    }
+    // Exactly the resting orientation whenever no move is running.
+    if (st.move === null) st.moveQuat.identity();
+    const clickActive = st.move !== null;
+
+    // Glow and shadow are flat layers shaped like the front view; fade them as
+    // the front face turns away (z of the rotated front normal).
+    const facing = Math.abs(st.frontNormal.set(0, 0, 1).applyQuaternion(st.moveQuat).z);
+
+    // --- Hover --------------------------------------------------------------
+    st.hover = smoothDamp(st.hover, inp.hover && !holdFront ? 1 : 0, st.hoverV, TIMING.hoverSmoothTime, dt);
+
+    // --- Orientation: cursor + keys + idle, clamped to the envelope ----------
+    const maxYaw = deg(response.yawDeg);
+    const maxPitch = deg(response.pitchDeg);
+    const idle = still ? 0 : arrival;
+    const cursorOn = !still;
+    const targetYaw = THREE.MathUtils.clamp(
+      (cursorOn ? inp.pointer.x * maxYaw : 0) + inp.keyYaw + idle * deg(AMPLITUDE.idleYawDeg) * Math.sin(t * 0.31),
+      -maxYaw,
+      maxYaw,
+    );
+    const targetPitch = THREE.MathUtils.clamp(
+      (cursorOn ? inp.pointer.y * maxPitch : 0) +
+        inp.keyPitch +
+        idle * deg(AMPLITUDE.idlePitchDeg) * Math.sin(t * 0.23 + 1.1),
+      -maxPitch,
+      maxPitch,
+    );
+    const targetRoll = idle * deg(AMPLITUDE.idleRollDeg) * Math.sin(t * 0.17 + 0.4);
+    if (clickActive) {
+      // Hold the pointer tilt exactly where it was when the click landed; the
+      // springs restart from rest afterwards, so it eases back to the pointer.
+      st.yawV.v = st.pitchV.v = st.dragV.v = st.rollV.v = 0;
+    } else {
+      st.yaw = smoothDamp(st.yaw, holdFront ? 0 : targetYaw, st.yawV, TIMING.tiltSmoothTime, dt);
+      st.pitch = smoothDamp(st.pitch, holdFront ? 0 : targetPitch, st.pitchV, TIMING.tiltSmoothTime, dt);
+      st.roll = smoothDamp(st.roll, targetRoll, st.rollV, TIMING.tiltSmoothTime, dt);
+      // Touch-drag preview: tight follow while dragging, soft return on release.
+      st.drag = smoothDamp(
+        st.drag,
+        inp.dragging && !holdFront ? inp.dragYaw : 0,
+        st.dragV,
+        inp.dragging ? TIMING.dragSmoothTime : TIMING.releaseSmoothTime,
+        dt,
+      );
+    }
+
+    // Parallax: nearest layer shifts against the cursor (never chases it).
+    const ptrX = cursorOn ? inp.pointer.x : 0;
+    const ptrY = cursorOn ? inp.pointer.y : 0;
+    st.px = smoothDamp(st.px, -ptrX * response.parallaxXPx * worldPerPx, st.pxV, TIMING.tiltSmoothTime, dt);
+    st.py = smoothDamp(st.py, ptrY * response.parallaxYPx * worldPerPx, st.pyV, TIMING.tiltSmoothTime, dt);
+
+    const lift = still ? 0 : st.hover;
+    const float = idle * AMPLITUDE.idleFloat * Math.sin(t * 0.9);
+
+    // Composition (parent -> child), each with one job, all pivoting on the
+    // model centre:
+    //   outer:  position (parallax, float, hover lift, move lift/forward),
+    //           scale (arrival, hover, move crest), arrival settle rotation
+    //   move:   click move only, one quaternion composed per move (moves.ts)
+    //   tilt:   pointer / keys / idle / touch-drag (held during a move)
+    if (outer.current) {
+      outer.current.position.set(
+        st.px,
+        st.py + float + lift * AMPLITUDE.hoverLift + crest * AMPLITUDE.manoeuvreLift - away * AMPLITUDE.arrivalDrop,
+        crest * crestForward,
+      );
+      outer.current.rotation.set(away * deg(AMPLITUDE.arrivalPitchDeg), away * deg(AMPLITUDE.arrivalYawDeg), 0);
+      outer.current.scale.setScalar(
+        THREE.MathUtils.lerp(AMPLITUDE.arrivalScale, 1, holdFront ? 1 : arrival) *
+          (1 + lift * AMPLITUDE.hoverScale) *
+          (1 + crest * crestScale),
+      );
+    }
+    moveGroup.current?.quaternion.copy(st.moveQuat);
+    tilt.current?.rotation.set(st.pitch, st.yaw + st.drag, st.roll);
+
+    // --- Energy pulse along the blue ribbon, catching the white ------------
+    let pulseActive = false;
+    const fx = fxRef.current!;
+    const blue = fx["blue-ribbon"];
+    const white = fx["white-ribbon"];
+    let pulseIntensity = 0;
+    let phase = 0;
+    if (st.pulseStart >= 0) {
+      const p = (t - st.pulseStart) / TIMING.pulseSeconds;
+      if (p >= 1) {
+        st.pulseStart = -1;
+      } else {
+        pulseActive = true;
+        // Travels left -> right along the blue ribbon, round its curl and
+        // fades a little way into the white ribbon's right end.
+        phase = THREE.MathUtils.lerp(-0.04, 0.62, easeInOutSine(p));
+        pulseIntensity = Math.sin(Math.PI * p) * 1.5;
+      }
+    }
+    blue.energy.uEnergyPhase.value = phase;
+    blue.energy.uEnergyIntensity.value = pulseIntensity;
+    white.energy.uEnergyPhase.value = phase;
+    white.energy.uEnergyIntensity.value = pulseIntensity * 0.35;
+    if (pulseLight.current) {
+      const onBlue = phase < 0.5;
+      const sAxis = onBlue ? clamp01(phase * 2) : 1 - clamp01((phase - 0.5) * 2);
+      pointOnAxis(onBlue ? blue.axis : white.axis, sAxis, pulseLight.current.position, SILHOUETTE_Z + 0.8);
+      pulseLight.current.intensity = pulseIntensity * 0.7;
+    }
+
+    // --- Illumination -------------------------------------------------------
+    st.flash *= Math.exp(-dt * 3.2);
+    if (st.flash < 1e-3) st.flash = 0;
+    const lit = holdFront ? 1 : arrival;
+    const reach = Math.min(1, Math.hypot(ptrX, ptrY));
+    const breathe = still ? 1 : 1 + 0.06 * Math.sin(t * 1.05);
+
+    if (whiteMat.current) whiteMat.current.emissiveIntensity = 0.04 + 0.16 * lit + 0.1 * st.flash + 0.06 * surge + 0.08 * accent;
+    if (blueMat.current) blueMat.current.emissiveIntensity = 0.1 + 0.16 * lit + 0.35 * st.flash + 0.3 * surge + 0.4 * accent;
+    if (rimLight.current) rimLight.current.intensity = (0.9 + 1.3 * st.hover + 1.2 * st.flash + 1.2 * surge + 1.4 * accent) * lit;
+    get().scene.environmentIntensity = 0.55 + 0.45 * lit;
+
+    if (glowMat.current) {
+      glowMat.current.opacity =
+        GLOW.strength * lit * breathe * (0.35 + 0.65 * facing) * (1 + 0.3 * st.hover + 0.25 * reach + 0.6 * st.flash + AMPLITUDE.manoeuvreGlow * surge + 0.8 * accent);
+    }
+    if (glowMesh.current) {
+      // Deeper layer: parallaxes less, so the halo slides out towards the cursor.
+      glowMesh.current.position.set(st.px * 0.35, st.py * 0.35 + float * 0.5 - away * AMPLITUDE.arrivalDrop, -0.7);
+      glowMesh.current.scale.setScalar(1 + 0.04 * st.hover + 0.04 * reach);
+    }
+    if (shadowMesh.current) {
+      // Soft drop shadow cast onto the glow: deepens the sense of layers.
+      shadowMesh.current.position.set(
+        st.px * 0.6 + SHADOW.offset.x - st.yaw * 0.25,
+        st.py * 0.6 + SHADOW.offset.y + float * 0.6 - away * AMPLITUDE.arrivalDrop,
+        -0.45,
+      );
+    }
+    if (shadowMat.current) shadowMat.current.opacity = SHADOW.opacity * lit * facing * facing;
+    // Highlight sweep light moves against the turn, so bevels catch it.
+    if (sweepLight.current) sweepLight.current.position.set(-(st.yaw + st.drag) * 18, 2.5 + st.pitch * 18, 5);
+
+    // --- Keep rendering only while something moves --------------------------
+    const settling =
+      Math.abs(st.yawV.v) + Math.abs(st.pitchV.v) + Math.abs(st.pxV.v) + Math.abs(st.pyV.v) > 1e-4 ||
+      Math.abs(st.dragV.v) + Math.abs(st.hoverV.v) > 1e-4 ||
+      Math.abs(st.drag - (inp.dragging ? inp.dragYaw : 0)) > 1e-4 ||
+      Math.abs(st.yaw - (holdFront ? 0 : targetYaw)) > 1e-4;
+    const animating =
+      !still || arrival < 1 || st.move !== null || pulseActive || st.flash > 0 || settling || inp.dragging;
+    if (animating && !paused) invalidate();
+  });
+
+  const energyFor = (id: string) => (shader: THREE.WebGLProgramParametersWithUniforms) =>
+    patchEnergyShader(shader, fxRef.current![id].energy);
+
+  return (
+    <>
+      <mesh ref={glowMesh} position={[0, 0, -0.7]} renderOrder={-2}>
+        <planeGeometry args={[glow.worldWidth, glow.worldHeight]} />
+        <meshBasicMaterial
+          ref={glowMat}
+          map={glow.texture}
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh ref={shadowMesh} position={[0, 0, -0.45]} renderOrder={-1}>
+        <planeGeometry args={[shadow.worldWidth, shadow.worldHeight]} />
+        <meshBasicMaterial ref={shadowMat} map={shadow.texture} transparent opacity={0} depthWrite={false} />
+      </mesh>
+
+      <directionalLight ref={rimLight} position={[1.5, 3, -6]} intensity={0} color="#3d7bff" />
+      <directionalLight ref={sweepLight} position={[0, 2.5, 5]} intensity={0.9} color="#ffffff" />
+      <pointLight ref={pulseLight} color="#6aa6ff" intensity={0} distance={2.4} decay={2} />
+
+      <group ref={outer}>
+        <group ref={moveGroup}>
+          <group ref={tilt}>
+            {geometries.map(({ ribbon, geometry }) =>
+              ribbon.id === "white-ribbon" ? (
+                <mesh key={ribbon.id} geometry={geometry}>
+                  {/* Satin/gloss white: soft base sheen under a crisp coat. */}
+                  <meshPhysicalMaterial
+                    ref={whiteMat}
+                    color={ribbon.color}
+                    roughness={0.3}
+                    metalness={0.02}
+                    clearcoat={0.8}
+                    clearcoatRoughness={0.1}
+                    envMapIntensity={1.45}
+                    emissive="#ffffff"
+                    emissiveIntensity={0}
+                    onBeforeCompile={energyFor(ribbon.id)}
+                    customProgramCacheKey={() => "solvitech-energy"}
+                  />
+                </mesh>
+              ) : (
+                <mesh key={ribbon.id} geometry={geometry}>
+                  {/* Coated metallic blue: colour from a light metallic base,
+                      depth from a glossy clearcoat. */}
+                  <meshPhysicalMaterial
+                    ref={blueMat}
+                    color={ribbon.color}
+                    roughness={0.32}
+                    metalness={0.3}
+                    clearcoat={1}
+                    clearcoatRoughness={0.08}
+                    envMapIntensity={1.3}
+                    emissive={ribbon.color}
+                    emissiveIntensity={0}
+                    onBeforeCompile={energyFor(ribbon.id)}
+                    customProgramCacheKey={() => "solvitech-energy"}
+                  />
+                </mesh>
+              ),
+            )}
+          </group>
+        </group>
+      </group>
+    </>
+  );
+}
+
+function CameraFit() {
+  const get = useThree((s) => s.get);
+  const size = useThree((s) => s.size);
+  const invalidate = useThree((s) => s.invalidate);
+  const contours = useMarkContours();
+
+  useEffect(() => {
+    const { distance } = fitMetrics(size.width, size.height, contours, SILHOUETTE_Z);
+    const camera = get().camera as THREE.PerspectiveCamera;
+    camera.fov = FOV;
+    camera.near = distance * 0.4;
+    camera.far = distance * 2;
+    camera.position.set(0, 0, distance);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+    invalidate();
+  }, [get, size.width, size.height, contours, invalidate]);
+
+  return null;
+}
+
+function Studio({ lowPower }: { lowPower: boolean }) {
+  return (
+    <>
+      {/* World-fixed softboxes and strips. At rest the faces reflect empty
+          space (true brand colours); turning sweeps the strips across faces
+          and bevels (a face turned by θ reflects at 2θ). */}
+      <Environment resolution={lowPower ? 128 : 256} frames={1}>
+        <Lightformer form="rect" intensity={2} color="#ffffff" position={[-4, 4, 6]} scale={[7, 4, 1]} />
+        <Lightformer form="rect" intensity={3.2} color="#ffffff" position={[1.9, 0.4, 5]} scale={[0.32, 8, 1]} />
+        <Lightformer form="rect" intensity={2.4} color="#e4ecff" position={[-1.7, -0.3, 5]} scale={[0.26, 8, 1]} />
+        <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 1.3, 5]} scale={[8, 0.22, 1]} />
+        <Lightformer form="rect" intensity={0.8} color="#dfe8ff" position={[6, -1, 4]} scale={[4, 6, 1]} />
+        <Lightformer form="rect" intensity={2.2} color="#3d7bff" position={[0, 3, -6]} scale={[10, 1.5, 1]} />
+        <Lightformer form="rect" intensity={1.6} color="#2f6bff" position={[-5, -3, 2]} scale={[0.4, 5, 1]} />
+        <Lightformer form="rect" intensity={1.6} color="#2f6bff" position={[5, -3, -2]} scale={[0.4, 5, 1]} />
+      </Environment>
+      <ambientLight intensity={0.07} color="#9fb6ff" />
+      <directionalLight position={[-3, 4, 6]} intensity={1.15} color="#ffffff" />
+      <directionalLight position={[-5, -2, -4]} intensity={0.7} color="#2f5fd0" />
+    </>
+  );
+}
+
+export default function InteractiveScene(props: InteractiveSceneProps) {
+  return (
+    <Canvas
+      frameloop="demand"
+      dpr={[1, props.lowPower ? 1.5 : 2]}
+      gl={{ antialias: true, alpha: true, toneMapping: THREE.NeutralToneMapping, powerPreference: "high-performance" }}
+      // Input is handled by the accessible element layered above the canvas.
+      style={{ pointerEvents: "none" }}
+      aria-hidden
+    >
+      <Studio lowPower={props.lowPower} />
+      <Suspense fallback={null}>
+        <CameraFit />
+        <Sculpture {...props} />
+      </Suspense>
+    </Canvas>
+  );
+}
