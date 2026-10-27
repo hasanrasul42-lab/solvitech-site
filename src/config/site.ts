@@ -1,60 +1,74 @@
+import { WORK_VISIBLE } from "./work";
+
 /**
  * Site structure and navigation.
  *
- * The homepage is planned as seven chapters (Impress -> Explain -> Prove ->
- * Reassure -> Convert). The hero and Solutions exist today. Every link that points at
- * a chapter which is not built yet is marked `pending`: it renders as a
- * complete-looking control that says "coming soon" when used, instead of
- * routing to a page or anchor that does not exist. When a chapter ships, set
- * its `status` to "live" and the links start working as in-page anchors.
+ * The homepage is seven chapters, in this order. Each renders as a <section>
+ * whose id matches its chapter id, so navigation resolves to in-page anchors
+ * until dedicated pages exist (see PLANNED_PAGES).
+ *
+ * Selected Work is only shown -- and only linked -- once approved real
+ * projects exist (src/config/work.ts).
  */
 
-export type ChapterId = "hero" | "work" | "solutions" | "approach" | "investment" | "about" | "contact";
+export type ChapterId = "hero" | "solutions" | "work" | "why" | "approach" | "working-together" | "contact";
 
 export interface Chapter {
   id: ChapterId;
   title: string;
-  status: "live" | "pending";
+  live: boolean;
 }
 
 export const HOME_CHAPTERS: Chapter[] = [
-  { id: "hero", title: "Engineering better business", status: "live" },
-  { id: "work", title: "Selected work", status: "pending" },
-  { id: "solutions", title: "Solutions", status: "live" },
-  { id: "approach", title: "Our approach", status: "pending" },
-  { id: "investment", title: "Investment", status: "pending" },
-  { id: "about", title: "About", status: "pending" },
-  { id: "contact", title: "Start a project", status: "pending" },
+  { id: "hero", title: "Engineering better business", live: true },
+  { id: "solutions", title: "Solutions", live: true },
+  { id: "work", title: "Selected work", live: WORK_VISIBLE },
+  { id: "why", title: "Why Solvitech", live: true },
+  { id: "approach", title: "Our approach", live: true },
+  { id: "working-together", title: "Working together", live: true },
+  { id: "contact", title: "Start a conversation", live: true },
 ];
 
-const chapter = (id: ChapterId) => HOME_CHAPTERS.find((c) => c.id === id)!;
+export const isLive = (id: ChapterId) => HOME_CHAPTERS.some((c) => c.id === id && c.live);
+
+/**
+ * Dedicated pages planned for later tasks. Nothing links to these until they
+ * exist: when a page ships, point the relevant config `page` field at it.
+ */
+export const PLANNED_PAGES = [
+  "/solutions",
+  "/solutions/ai",
+  "/solutions/automation",
+  "/solutions/custom-software",
+  "/solutions/integrations",
+  "/solutions/websites",
+  "/solutions/digital-growth",
+  "/about",
+  "/approach",
+  "/working-together",
+  "/contact",
+] as const;
 
 export interface SiteLink {
   label: string;
-  /** Destination once live. Chapters resolve to in-page anchors on "/". */
   href: string;
+  /** A destination that does not exist yet (renders as a "coming soon" control). */
   pending: boolean;
-  /** Shown when a pending link is used. */
   pendingNote?: string;
 }
 
 function chapterLink(label: string, id: ChapterId): SiteLink {
-  const c = chapter(id);
-  return {
-    label,
-    href: id === "hero" ? "/" : `/#${id}`,
-    pending: c.status === "pending",
-    pendingNote: `${c.title} is coming soon.`,
-  };
+  return { label, href: id === "hero" ? "/" : `/#${id}`, pending: !isLive(id) };
 }
 
+/** Header links: only chapters that are live. */
 export const NAV_LINKS: SiteLink[] = [
-  chapterLink("Home", "hero"),
-  chapterLink("Our Work", "work"),
   chapterLink("Solutions", "solutions"),
-  chapterLink("Our Approach", "approach"),
-  chapterLink("About", "about"),
-];
+  chapterLink("Our Work", "work"),
+  chapterLink("About", "why"),
+  chapterLink("Approach", "approach"),
+  chapterLink("Working Together", "working-together"),
+].filter((l) => !l.pending);
 
 /** Header call to action (styled as a button, separate from the text links). */
 export const NAV_CTA: SiteLink = chapterLink("Start a Project", "contact");
@@ -68,5 +82,5 @@ export const SITE = {
   name: "Solvitech",
   title: "Solvitech | Engineering better business",
   description:
-    "Solvitech designs and builds intelligent systems, AI automations, high-performance websites and digital solutions that make businesses work better.",
+    "Solvitech designs and builds bespoke software, AI agents, business automation and integrations, plus websites and digital growth, so businesses work better.",
 };

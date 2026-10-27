@@ -1,12 +1,19 @@
 import HomeEntrance from "@/components/home/entrance/HomeEntrance";
 import { INTRO_BOOT_SCRIPT } from "@/components/home/entrance/introTimeline";
+import HomeApproach from "@/components/home/HomeApproach";
+import HomeContact from "@/components/home/HomeContact";
 import HomeSolutions from "@/components/home/HomeSolutions";
+import HomeWhy from "@/components/home/HomeWhy";
+import HomeWork from "@/components/home/HomeWork";
+import HomeWorkingTogether from "@/components/home/HomeWorkingTogether";
+import SiteFooter from "@/components/site/SiteFooter";
 import SiteHeader from "@/components/site/SiteHeader";
 
 /**
- * Homepage. Chapters are added below the hero as they are built (see
- * HOME_CHAPTERS in src/config/site.ts); each renders as a <section> whose id
- * matches its chapter id, so navigation links resolve to in-page anchors.
+ * Homepage: seven chapters in the order of HOME_CHAPTERS (src/config/site.ts).
+ * Each renders as a <section> whose id matches its chapter id, so navigation
+ * links resolve to in-page anchors. Selected Work renders only once approved
+ * projects exist.
  * The boot script must come right after the hero markup: it decides whether
  * the System Activation intro plays and centres the mark before first paint.
  */
@@ -24,7 +31,13 @@ export default function Home() {
         <HomeEntrance />
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
         <HomeSolutions />
+        <HomeWork />
+        <HomeWhy />
+        <HomeApproach />
+        <HomeWorkingTogether />
+        <HomeContact />
       </main>
+      <SiteFooter />
     </>
   );
 }

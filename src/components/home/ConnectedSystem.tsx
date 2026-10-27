@@ -183,16 +183,6 @@ export default function ConnectedSystem() {
     };
   }, [play]);
 
-  // The closing action replays the walkthrough (see SolutionsReplay).
-  useEffect(() => {
-    const onReplay = () => {
-      stageRef.current?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-      setTimeout(play, reduced ? 0 : 450);
-    };
-    window.addEventListener("solutions:replay", onReplay);
-    return () => window.removeEventListener("solutions:replay", onReplay);
-  }, [play, reduced]);
-
   // Gentle dimensional pointer response (desktop, wide layout only).
   useEffect(() => {
     const stage = stageRef.current;

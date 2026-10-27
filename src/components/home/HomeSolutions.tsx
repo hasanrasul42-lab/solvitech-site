@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { SOLUTIONS_CLOSING, SOLUTIONS_INTRO, SUPPORTING, SUPPORTING_LABEL } from "@/config/solutions";
 import ConnectedSystem from "./ConnectedSystem";
-import SolutionsReplay from "./SolutionsReplay";
 
 const gutter = "px-[max(1.25rem,env(safe-area-inset-left))] sm:px-8 lg:px-12";
 const anchorOffset = "scroll-mt-[calc(var(--header-height)+1.5rem)]";
@@ -77,19 +76,15 @@ export default function HomeSolutions() {
           </div>
         </div>
 
-        {/* One working closing action: contact once a real address exists,
-            otherwise replay the walkthrough. Never a placeholder button. */}
+        {/* Closing: route anyone unsure into the contact chapter. */}
         <div className="mt-20 flex flex-col gap-6 rounded-[24px] border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8 md:mt-24 md:flex-row md:items-center md:justify-between lg:px-10">
           <p className="max-w-[34rem] text-xl leading-snug tracking-[-0.01em] text-foreground md:text-2xl">
             {SOLUTIONS_CLOSING.line}
           </p>
-          {SOLUTIONS_CLOSING.contactEmail ? (
-            <a href={`mailto:${SOLUTIONS_CLOSING.contactEmail}`} className={`${secondaryCta} shrink-0`}>
-              Discuss a project
-            </a>
-          ) : (
-            <SolutionsReplay className={`${secondaryCta} shrink-0`} />
-          )}
+          <Link href={SOLUTIONS_CLOSING.cta.href} className={`${secondaryCta} shrink-0`}>
+            {SOLUTIONS_CLOSING.cta.label}
+            <span aria-hidden>→</span>
+          </Link>
         </div>
       </div>
     </section>

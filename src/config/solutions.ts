@@ -4,16 +4,18 @@
  *
  * Positioning: one integrated offer. Three core capabilities (Build, Automate,
  * Connect) lead; websites and growth are supporting capabilities of the same
- * team. Detailed explanations belong on future dedicated pages: set `page`
- * once a page exists and the chapter links to it; until then nothing links to
- * a missing route.
+ * team. Detailed explanations belong on future dedicated pages (planned:
+ * /solutions/custom-software, /solutions/ai, /solutions/automation,
+ * /solutions/integrations, /solutions/websites, /solutions/digital-growth):
+ * set `page` once a page exists and the chapter links to it; until then
+ * nothing links to a missing route.
  */
 
 export const SOLUTIONS_INTRO = {
   eyebrow: "Solutions",
   title: "Technology built around your business",
   intro:
-    "From disconnected systems and repetitive tasks to customer-facing platforms, we engineer practical technology around the way your business operates.",
+    "Bespoke software, AI, automation and integrations, engineered around the way your business already operates. From disconnected systems and repetitive tasks to customer-facing platforms.",
 };
 
 export type CapabilityId = "build" | "automate" | "connect";
@@ -33,19 +35,19 @@ export const CAPABILITIES: Capability[] = [
     id: "build",
     name: "Build",
     line: "Software and systems designed for how a business operates.",
-    covers: "Custom software & business systems",
+    covers: "Bespoke software & business systems",
   },
   {
     id: "automate",
     name: "Automate",
-    line: "Intelligent workflows that remove repetitive manual steps.",
-    covers: "AI agents & automation",
+    line: "AI agents and workflows that take on repetitive, manual work.",
+    covers: "AI agents & process automation",
   },
   {
     id: "connect",
     name: "Connect",
     line: "Integrations that allow tools and information to work together.",
-    covers: "Integrations & data",
+    covers: "Integrations & connected data",
   },
 ];
 
@@ -85,21 +87,17 @@ export const SUPPORTING: Pathway[] = [
   {
     id: "websites",
     title: "Websites & Digital Experiences",
-    line: "Fast, accessible websites and customer-facing experiences, built on the same foundations.",
+    line: "Fast, accessible websites, e-commerce and customer-facing experiences, built on the same engineering foundations.",
   },
   {
     id: "growth",
-    title: "Growth & Visibility",
-    line: "SEO, conversion optimisation and measurement, so the right people find you and act.",
+    title: "SEO & Digital Growth",
+    line: "Search visibility, conversion improvements and clear measurement, so the right people find you and get in touch.",
   },
 ];
 
 export const SOLUTIONS_CLOSING = {
-  line: "Every project starts with how your business works today.",
-  /**
-   * Set to a real address (or replace with the Contact page link once it
-   * exists) to turn the closing into a direct contact action. Until then the
-   * closing offers a working replay of the walkthrough, never a fake button.
-   */
-  contactEmail: undefined as string | undefined,
+  line: "Not sure which of these you need? Start with the problem.",
+  /** The homepage contact chapter (or the Contact page once it exists). */
+  cta: { label: "Describe your project", href: "/#contact" },
 };
