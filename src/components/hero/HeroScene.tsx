@@ -13,7 +13,7 @@ import { HERO_SMOOTH_TIME, type HeroInteraction } from "./heroMotion";
 
 /*
  * Public hero sculpture. Fixed, art-directed values only: no developer
- * controls, no orbit or drag. Tuning happens in /3d-lab.
+ * controls, no orbit or drag. Tuning happened in /3d-lab (archive branch).
  */
 const GEOMETRY = { depth: 0.16, bevel: 0.02, bevelSegments: 5, smoothing: true };
 const GLOW = { color: "#2f6bff", softness: 34, strength: 0.42 };

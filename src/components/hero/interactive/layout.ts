@@ -34,7 +34,7 @@ export const RIBBON_BOX_CSS = {
 };
 
 /**
- * 3D-rendered entrance posters (see /3d-lab/poster-capture). Each poster is the
+ * 3D-rendered entrance posters (see /3d-lab/poster-capture on the archive branch). Each poster is the
  * real scene cropped to the ribbon box scaled by scaleX/scaleY around its
  * centre (room for the start pose's turn and drop, and the resting glow).
  */

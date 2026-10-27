@@ -176,7 +176,7 @@ export interface InteractiveMarkProps {
   /** Preview only: told which move starts on each accepted click. */
   onMoveStart?: (id: MoveId) => void;
   /**
-   * Poster capture only (/3d-lab/poster-capture): render the scene frozen at
+   * Poster capture only (/3d-lab/poster-capture, archive branch): render the scene frozen at
    * entrance pose q, with no posters, idle, cursor response or hit target.
    */
   captureQ?: number;

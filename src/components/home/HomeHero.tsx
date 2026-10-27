@@ -23,7 +23,7 @@ const secondaryCta =
 export default function HomeHero({
   markProps,
 }: {
-  /** Lab experiments only (e.g. /3d-lab/entrance-prototype); the homepage passes none. */
+  /** Lab experiments only (e.g. /3d-lab/entrance-prototype, archive branch); the homepage passes none. */
   markProps?: Omit<InteractiveMarkProps, "className">;
 } = {}) {
   return (

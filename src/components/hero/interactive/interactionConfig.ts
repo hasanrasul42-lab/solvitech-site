@@ -23,7 +23,7 @@ export type ResponsePreset = keyof typeof RESPONSE_PRESETS;
  * first paint; once WebGL has rendered, the canvas takes over at exactly that
  * pose and the real geometry performs the whole entrance.
  *
- * Posters are rendered from this scene by /3d-lab/poster-capture (see that
+ * Posters are rendered from this scene by /3d-lab/poster-capture on the archive branch (see that
  * page for how to regenerate them after changing materials, lights or the
  * start pose).
  */

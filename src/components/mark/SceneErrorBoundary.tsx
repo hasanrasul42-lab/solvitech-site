@@ -20,7 +20,7 @@ export default class SceneErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    console.error("[3d-lab] scene failed to render", error);
+    console.error("[3d] scene failed to render", error);
   }
 
   render() {
