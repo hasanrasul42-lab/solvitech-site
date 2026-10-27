@@ -1,0 +1,159 @@
+/*
+ * "System Activation" homepage entrance. Every rule is gated on
+ * html[data-intro], which only the homepage sets (boot script + HomeEntrance),
+ * so other pages are unaffected. Timings mirror INTRO in introTimeline.ts.
+ *
+ *   0-220ms     A  mark appears at the viewport centre, dormant (dimmed)
+ *   160-800ms   B  a blue light sweeps through the mark as it powers up
+ *   640-1200ms  C  the mark glides into its hero position and final size;
+ *                  copy, ambient light and header arrive with it
+ *   1500ms      D  html[data-intro=done]: everything at rest, interactive
+ */
+
+/* --- The mark's stage (poster + live canvas move together) ----------------- */
+html[data-intro="play"] #hero [data-entrance] {
+  --intro-scale: 0.86;
+  transform-origin: 50% 50%;
+  animation:
+    intro-appear 220ms ease-out both,
+    intro-power 520ms cubic-bezier(0.4, 0, 0.2, 1) 180ms both,
+    intro-move 560ms cubic-bezier(0.65, 0, 0.25, 1) 640ms both;
+  pointer-events: none;
+}
+
+@keyframes intro-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dormant -> active: the real materials and glow, brightened as one layer. */
+@keyframes intro-power {
+  from {
+    filter: brightness(0.42) saturate(0.85);
+  }
+  to {
+    filter: none;
+  }
+}
+
+@keyframes intro-move {
+  from {
+    transform: translate3d(var(--intro-dx, 0px), var(--intro-dy, 0px), 0) scale(var(--intro-scale));
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* --- Activation sweep: masked by the official silhouette ------------------- */
+.intro-sweep {
+  display: none;
+  mask: url("/brand/solvitech-mark.svg") center / 100% 100% no-repeat;
+  -webkit-mask: url("/brand/solvitech-mark.svg") center / 100% 100% no-repeat;
+  mix-blend-mode: screen;
+  overflow: hidden;
+}
+
+html[data-intro="play"] .intro-sweep {
+  display: block;
+}
+
+.intro-sweep-band {
+  position: absolute;
+  inset: -10% -120%;
+  background: linear-gradient(
+    104deg,
+    transparent 40%,
+    rgb(80 140 255 / 0) 43%,
+    rgb(120 170 255 / 0.55) 47.5%,
+    rgb(225 236 255 / 0.9) 50%,
+    rgb(120 170 255 / 0.55) 52.5%,
+    rgb(80 140 255 / 0) 57%,
+    transparent 60%
+  );
+  animation: intro-sweep 640ms cubic-bezier(0.45, 0, 0.25, 1) 160ms both;
+}
+
+@keyframes intro-sweep {
+  0% {
+    transform: translate3d(-34%, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(34%, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* --- Copy, ambient light and header arrive with the move ------------------- */
+html[data-intro="play"] #hero .hero-rise {
+  animation-duration: 640ms;
+  animation-delay: calc(620ms + var(--delay, 0ms) * 0.6);
+}
+
+html[data-intro="play"] #hero .hero-fade {
+  animation-duration: 900ms;
+  animation-delay: 520ms;
+}
+
+html[data-intro="play"] header {
+  animation: intro-appear 600ms ease-out 760ms both;
+}
+
+/* Finished or skipped: rest in the final state (no replay of the normal hero
+   animations once the intro rules stop matching). */
+html[data-intro="done"] #hero :is(.hero-rise, .hero-fade) {
+  animation: none;
+}
+
+/* No intro needed (3D expected at once): the mark simply fades in with the
+   copy, at its resting pose. */
+html[data-intro="skip"] #hero [data-entrance] {
+  animation: intro-appear 450ms ease-out both;
+}
+
+/* --- Skip control: only while the intro runs ------------------------------- */
+.intro-skip {
+  display: none;
+}
+
+html[data-intro="play"] .intro-skip {
+  display: inline-flex;
+  animation: intro-skip 1500ms linear both;
+}
+
+/* Offered while the mark is centred; gone once the page is being revealed
+   (it would otherwise sit over the CTAs on phones). */
+@keyframes intro-skip {
+  0%,
+  13% {
+    opacity: 0;
+  }
+  25%,
+  40% {
+    opacity: 1;
+  }
+  48%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-intro] #hero [data-entrance],
+  html[data-intro] .intro-sweep-band,
+  html[data-intro] header {
+    animation: none;
+  }
+}
