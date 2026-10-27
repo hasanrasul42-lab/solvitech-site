@@ -1,0 +1,39 @@
+/* "Inside an Intelligent Business" prototype (lab only). */
+
+/* A changed value briefly lights up (tiles, availability counts). */
+@keyframes ib-flash {
+  from {
+    background-color: rgb(54 123 250 / 0.22);
+  }
+}
+.ib-flash {
+  animation: ib-flash 1400ms ease-out;
+}
+
+/* New list entries arrive (approvals, activity). */
+@keyframes ib-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.ib-in {
+  animation: ib-in 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ib-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ib-spin {
+  animation: ib-spin 800ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-stage,
+  .ib-stage * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,4 +1,5 @@
 import HomeHero from "@/components/home/HomeHero";
+import HomeSolutions from "@/components/home/HomeSolutions";
 import SiteHeader from "@/components/site/SiteHeader";
 
 /**
@@ -18,6 +19,7 @@ export default function Home() {
       <SiteHeader />
       <main id="main" className="flex-1">
         <HomeHero />
+        <HomeSolutions />
       </main>
     </>
   );

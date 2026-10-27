@@ -2,7 +2,7 @@
  * Site structure and navigation.
  *
  * The homepage is planned as seven chapters (Impress -> Explain -> Prove ->
- * Reassure -> Convert). Only the hero exists today. Every link that points at
+ * Reassure -> Convert). The hero and Solutions exist today. Every link that points at
  * a chapter which is not built yet is marked `pending`: it renders as a
  * complete-looking control that says "coming soon" when used, instead of
  * routing to a page or anchor that does not exist. When a chapter ships, set
@@ -20,7 +20,7 @@ export interface Chapter {
 export const HOME_CHAPTERS: Chapter[] = [
   { id: "hero", title: "Engineering better business", status: "live" },
   { id: "work", title: "Selected work", status: "pending" },
-  { id: "solutions", title: "Solutions", status: "pending" },
+  { id: "solutions", title: "Solutions", status: "live" },
   { id: "approach", title: "Our approach", status: "pending" },
   { id: "investment", title: "Investment", status: "pending" },
   { id: "about", title: "About", status: "pending" },
@@ -60,7 +60,7 @@ export const NAV_LINKS: SiteLink[] = [
 export const NAV_CTA: SiteLink = chapterLink("Start a Project", "contact");
 
 export const HERO_CTAS = {
-  primary: chapterLink("Explore our work", "work"),
+  primary: chapterLink("Explore solutions", "solutions"),
   secondary: chapterLink("Discuss a project", "contact"),
 };
 

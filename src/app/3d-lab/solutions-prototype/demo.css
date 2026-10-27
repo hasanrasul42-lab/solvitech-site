@@ -1,0 +1,8 @@
+/* Solutions prototype (lab only). Packet/flow keyframes are shared with the
+   homepage walkthrough (globals.css .sol-packet / .sol-flow). */
+@media (prefers-reduced-motion: reduce) {
+  .demo-stage,
+  .demo-stage * {
+    transition: none !important;
+  }
+}
