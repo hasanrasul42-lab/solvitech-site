@@ -1,26 +1,191 @@
 @import "tailwindcss";
 
+/* Solvitech is a dark-only site: one set of tokens, no light scheme. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #080d17;
+  --foreground: #e8edf7;
+  --muted: #9aa6bc;
+  --subtle: #7d89a1;
+  --accent: #367bfa;
+  --accent-soft: #6ea0ff;
+  --hairline: rgb(255 255 255 / 0.08);
+  --header-height: 4.5rem;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-hairline: var(--hairline);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgb(54 123 250 / 0.35);
+  color: #fff;
+}
+
+/* Hero entrance: short, CSS-only, never blocks reading. Content is visible
+   without JavaScript and appears instantly under reduced motion. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.hero-fade {
+  animation: hero-fade 1200ms ease-out both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Homepage hero (.hero-sync): the copy, the ambient bloom and the 3D mark all
+   start moving at first paint. The copy's nominal timing ends close to the
+   mark's typical finish; when the mark's 3D entrance actually starts,
+   HeroCopySync retimes these animations so the last line lands exactly as the
+   mark does. */
+.hero-sync .hero-rise {
+  animation-duration: 1500ms;
+}
+
+.hero-sync .hero-fade {
+  animation-duration: 1800ms;
+}
+
+/* "Refined" ambient light (A/B candidate, HomeHero lighting="refined"): an
+   asymmetric field concentrated low around the blue ribbon, built from two
+   offset ellipses with long multi-stop falloffs so no circular edge reads. */
+.hero-bloom-refined {
+  background:
+    radial-gradient(
+      ellipse 34% 13% at 46% 31%,
+      rgb(47 107 255 / 0.12),
+      rgb(47 107 255 / 0.075) 30%,
+      rgb(47 107 255 / 0.035) 55%,
+      rgb(47 107 255 / 0.01) 78%,
+      transparent
+    ),
+    radial-gradient(
+      ellipse 75% 24% at 42% 35%,
+      rgb(38 88 220 / 0.05),
+      rgb(38 88 220 / 0.022) 45%,
+      rgb(38 88 220 / 0.006) 75%,
+      transparent
+    );
+}
+
+@media (min-width: 768px) {
+  .hero-bloom-refined {
+    background:
+      radial-gradient(
+        ellipse 30% 17% at 58% 73%,
+        rgb(47 107 255 / 0.12),
+        rgb(47 107 255 / 0.075) 30%,
+        rgb(47 107 255 / 0.035) 55%,
+        rgb(47 107 255 / 0.01) 78%,
+        transparent
+      ),
+      radial-gradient(
+        ellipse 60% 34% at 55% 77%,
+        rgb(38 88 220 / 0.05),
+        rgb(38 88 220 / 0.022) 45%,
+        rgb(38 88 220 / 0.006) 75%,
+        transparent
+      );
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-bloom-refined {
+    background:
+      radial-gradient(
+        ellipse 21% 23% at 68% 59%,
+        rgb(47 107 255 / 0.13),
+        rgb(47 107 255 / 0.08) 30%,
+        rgb(47 107 255 / 0.035) 55%,
+        rgb(47 107 255 / 0.01) 78%,
+        transparent
+      ),
+      radial-gradient(
+        ellipse 44% 52% at 64% 64%,
+        rgb(38 88 220 / 0.05),
+        rgb(38 88 220 / 0.022) 45%,
+        rgb(38 88 220 / 0.006) 75%,
+        transparent
+      );
+  }
+}
+
+/* Interactive mark: arrives from first paint (fade and a short rise) as one
+   layer -- poster and canvas together -- so the 3D can take over at any point
+   of it without a visible change. The 3D turn continues from there. */
+@keyframes mark-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.mark-arrive {
+  animation: mark-arrive 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Start -> resting poster when the 3D will not play its entrance: the start
+   pose leaves before the resting pose arrives (no double exposure). */
+@keyframes mark-poster-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+.mark-poster-out {
+  animation: mark-poster-leave 260ms ease-in both;
+}
+
+.mark-poster-fallback {
+  animation: hero-fade 520ms ease-out 180ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-fade,
+  .mark-arrive,
+  .mark-poster-out,
+  .mark-poster-fallback {
+    animation: none;
+  }
 }

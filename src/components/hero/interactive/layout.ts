@@ -32,3 +32,25 @@ export const RIBBON_BOX_CSS = {
   height: `min(${MARK_HEIGHT_FRACTION * 100}cqh, ${((MARK_MAX_WIDTH_FRACTION * RIBBON_BOX.h) / RIBBON_BOX.w) * 100}cqw)`,
   aspectRatio: `${RIBBON_BOX.w} / ${RIBBON_BOX.h}`,
 };
+
+/**
+ * 3D-rendered entrance posters (see /3d-lab/poster-capture). Each poster is the
+ * real scene cropped to the ribbon box scaled by scaleX/scaleY around its
+ * centre (room for the start pose's turn and drop, and the resting glow).
+ */
+export const POSTER = {
+  startUrl: "/brand/poster/mark-entrance-start.webp",
+  finalUrl: "/brand/poster/mark-entrance-final.webp",
+  scaleX: 1.7,
+  scaleY: 1.55,
+  /** The same posters rendered with the "refined" lighting (A/B candidate). */
+  refined: {
+    startUrl: "/brand/poster/mark-entrance-start-refined.webp",
+    finalUrl: "/brand/poster/mark-entrance-final-refined.webp",
+  },
+} as const;
+
+/** Poster URLs for a lighting variant (posters must match the live scene's lighting). */
+export function posterUrls(lighting: "approved" | "refined" = "approved") {
+  return lighting === "refined" ? POSTER.refined : { startUrl: POSTER.startUrl, finalUrl: POSTER.finalUrl };
+}

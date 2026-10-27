@@ -17,38 +17,90 @@ export const RESPONSE_PRESETS = {
 } satisfies Record<string, ResponseStrength>;
 
 export type ResponsePreset = keyof typeof RESPONSE_PRESETS;
+
+/**
+ * Entrance. A 3D-rendered poster of the real scene at the start pose shows at
+ * first paint; once WebGL has rendered, the canvas takes over at exactly that
+ * pose and the real geometry performs the whole entrance.
+ *
+ * Posters are rendered from this scene by /3d-lab/poster-capture (see that
+ * page for how to regenerate them after changing materials, lights or the
+ * start pose).
+ */
+export const ENTRANCE = {
+  /** Real 3D entrance, start pose -> rest. */
+  durationMs: 1400,
+  /** Canvas fades in over the start poster (both at the start pose). */
+  handoverMs: 120,
+  /**
+   * If WebGL has not rendered by this time after navigation start, there is
+   * no late entrance: the start poster gives way to the final-pose poster and
+   * the 3D later takes over at rest. Generous on purpose: a slightly late real
+   * entrance looks far better than swapping posters.
+   */
+  maxWaitMs: 3000,
+  /** Start -> final poster swap duration (globals.css .mark-poster-out/-fallback). */
+  fallbackPosterMs: 700,
+  /** After taking over from the resting poster, cursor response blends in over this. */
+  takeoverEngageMs: 900,
+  /** Entrance time fraction where pointer response and idle drift start to blend in. */
+  engageFrom: 0.72,
+  /** Entrance time fraction for the energy pulse. */
+  pulseAt: 0.55,
+} as const;
+
+/** Entrance pose easing: zero velocity at both ends, peak speed early, long settle. */
+export const entranceEase = (t: number) => 1 - Math.pow(1 - t, 4) * (1 + 4 * t);
+
+/**
+ * Dispatched (bubbling) from the mark's stage when the 3D entrance starts, so
+ * other hero elements can finish together with it.
+ */
+export const MARK_ENTRANCE_EVENT = "solvitech:mark-entrance";
+export interface MarkEntranceDetail {
+  /** performance.now() time at which the mark's entrance ends. */
+  endsAt: number;
+}
+
+export type EntranceState = "poster" | "handover" | "entering" | "complete" | "fallback";
+
+/** Live entrance progress handed to the scene each frame. */
+export interface EntranceProgress {
+  /** Overrides the time-based cursor/idle blend (fallback takeover). */
+  engage?: number;
+  /** Pose progress, 0 = start pose, 1 = rest. */
+  q: number;
+  /** Time progress through the entrance, 0..1. */
+  t: number;
+}
 export const DEFAULT_RESPONSE: ResponsePreset = "standard";
 
 /** Every timing and amplitude in one place, so the report and code agree. */
 export const TIMING = {
-  arrivalSeconds: 1.8,
-  /** Arrival progress at which the first energy pulse is launched. */
-  arrivalPulseAt: 0.35,
   /** Ignore further clicks for this long after an animation ends. */
   clickCooldownSeconds: 0.25,
   pulseSeconds: 1.4,
   /** Cursor/keyboard spring smooth time (s): ~60% at 200ms, settled ~450ms. */
   tiltSmoothTime: 0.2,
-  hoverSmoothTime: 0.22,
   dragSmoothTime: 0.08,
   releaseSmoothTime: 0.35,
 } as const;
 
 export const AMPLITUDE = {
-  arrivalYawDeg: -10,
-  arrivalPitchDeg: 4,
-  arrivalDrop: 0.14, // world units (~3% of mark height)
-  arrivalScale: 0.96,
+  /** Entrance start pose (entrance progress q = 0). Mirrored exactly by the
+   *  `.mark-entrance` transform in globals.css. */
+  arrivalYawDeg: -16,
+  arrivalPitchDeg: 5,
+  arrivalDrop: 0.288, // world units = 9.6% of the 3-unit mark height (~45-50px desktop)
+  arrivalScale: 0.9,
   idleYawDeg: 1.5,
   idlePitchDeg: 0.8,
   idleRollDeg: 0.3,
   idleFloat: 0.04,
-  hoverScale: 0.025,
   /** Lift at a move's crest (scale and forward travel are per move). */
   manoeuvreLift: 0.04,
   /** Extra glow at the start of a move (x base glow). */
   manoeuvreGlow: 0.9,
-  hoverLift: 0.05,
   dragMaxYawDeg: 35,
   keyStepDeg: 4,
 } as const;
@@ -60,7 +112,6 @@ export const AMPLITUDE = {
 export interface InteractionInput {
   /** Cursor offset from the logo centre, -1..1 (y down). */
   pointer: THREE.Vector2;
-  hover: boolean;
   dragging: boolean;
   /** Touch-drag preview yaw, radians. */
   dragYaw: number;
@@ -78,7 +129,6 @@ export interface InteractionInput {
 export function createInteractionInput(): InteractionInput {
   return {
     pointer: new THREE.Vector2(),
-    hover: false,
     dragging: false,
     dragYaw: 0,
     keyYaw: 0,

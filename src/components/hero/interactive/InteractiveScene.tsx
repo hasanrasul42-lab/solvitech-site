@@ -9,6 +9,7 @@ import {
   BLUE_SEGMENT,
   WHITE_SEGMENT,
   createEnergyUniforms,
+  createFieldTexture,
   createGlowTexture,
   patchEnergyShader,
   pointOnAxis,
@@ -19,15 +20,30 @@ import {
 import {
   clamp01,
   easeInOutSine,
-  easeOutCubic,
   smoothDamp,
 } from "../../mark/motion";
-import { useMarkContours } from "../../mark/useMarkContours";
-import { AMPLITUDE, TIMING, type InteractionInput, type ResponseStrength } from "./interactionConfig";
+import { loadMarkContours, useLoadedMarkContours } from "../../mark/useMarkContours";
+import type { MarkContours } from "../../mark/markGeometry";
+import {
+  AMPLITUDE,
+  ENTRANCE,
+  TIMING,
+  type EntranceProgress,
+  type InteractionInput,
+  type ResponseStrength,
+} from "./interactionConfig";
 import { MOVES, createShuffleBag, type MoveId } from "./moves";
 import { FOV, fitMetrics } from "./layout";
 
 const deg = THREE.MathUtils.degToRad;
+const smoothstep01 = (x: number) => {
+  const t = clamp01(x);
+  return t * t * (3 - 2 * t);
+};
+
+// Start fetching/parsing the mark as soon as this chunk loads. The canvas
+// mounts once it is parsed, so nothing inside the canvas suspends.
+void loadMarkContours();
 
 /*
  * Geometry: deeper than the Task 01-03 slab so a 10-15° turn reads as a solid
@@ -40,10 +56,31 @@ const SILHOUETTE_Z = GEOMETRY.depth / 2;
 const GLOW = { color: "#2f6bff", softness: 40, strength: 0.4, whiteAlpha: 0.22 };
 const SHADOW = { softness: 12, opacity: 0.55, offset: new THREE.Vector2(0.05, -0.09) };
 
+/**
+ * "refined" lighting (A/B candidate): one steady, shapeless field of blue
+ * light behind the mark, concentrated low around the blue ribbon and fading
+ * smoothly into the navy. No silhouette-shaped halo and no shadow copies, so
+ * nothing outlines the logo, and it does not react to the cursor or the click
+ * moves (it only builds with the entrance, like the approved glow).
+ */
+export type Lighting = "approved" | "refined";
+const FIELD = {
+  /** Size relative to the mark's bounds (stays inside the poster crop, 1.7 x 1.55). */
+  width: 1.5,
+  height: 1.3,
+  strength: 0.34,
+  /** World units below the mark's centre: towards the blue ribbon. */
+  drop: 0.12,
+};
+
 export interface InteractiveSceneProps {
   input: RefObject<InteractionInput>;
   /** Gives the DOM side a way to request a frame; returns an unregister. */
   registerWake: (wake: () => void) => () => void;
+  /** Entrance progress (pose q and time t), read every frame from InteractiveMark's controller. */
+  getEntrance: () => EntranceProgress;
+  /** Poster capture: hold the given entrance pose with no idle, cursor or pulse. */
+  frozen?: boolean;
   response: ResponseStrength;
   /** Reduced motion: no arrival/idle/tilt/spin; clicks give a light pulse. */
   reducedMotion: boolean;
@@ -54,6 +91,14 @@ export interface InteractiveSceneProps {
   onMoveStart?: (id: MoveId) => void;
   lowPower: boolean;
   onReady: () => void;
+  /**
+   * Size the canvas from layout size (offsetWidth/Height), ignoring CSS
+   * transforms on ancestors. Needed when the stage may be scaled while the
+   * canvas mounts (entrance prototype); the default measures the rendered box.
+   */
+  layoutSized?: boolean;
+  /** Background halo and shadow treatment (A/B); defaults to the approved one. */
+  lighting?: Lighting;
 }
 
 type RibbonFx = { axis: RibbonAxis; energy: EnergyUniforms };
@@ -61,6 +106,8 @@ type RibbonFx = { axis: RibbonAxis; energy: EnergyUniforms };
 function Sculpture({
   input,
   registerWake,
+  getEntrance,
+  frozen = false,
   response,
   reducedMotion,
   holdFront,
@@ -68,8 +115,10 @@ function Sculpture({
   lowPower,
   onReady,
   onMoveStart,
-}: InteractiveSceneProps) {
-  const contours = useMarkContours();
+  lighting = "approved",
+  contours,
+}: InteractiveSceneProps & { contours: MarkContours }) {
+  const refined = lighting === "refined";
   const invalidate = useThree((s) => s.invalidate);
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
@@ -86,8 +135,11 @@ function Sculpture({
   useEffect(() => () => geometries.forEach(({ geometry }) => geometry.dispose()), [geometries]);
 
   const glow = useMemo(
-    () => createGlowTexture(contours, GLOW.color, GLOW.softness, GLOW.whiteAlpha),
-    [contours],
+    () =>
+      refined
+        ? createFieldTexture(contours, GLOW.color, FIELD.width, FIELD.height)
+        : createGlowTexture(contours, GLOW.color, GLOW.softness, GLOW.whiteAlpha),
+    [contours, refined],
   );
   const shadow = useMemo(() => createGlowTexture(contours, "#000000", SHADOW.softness, 1), [contours]);
   useEffect(
@@ -114,7 +166,7 @@ function Sculpture({
   }
 
   // Scene graph refs. Nesting keeps the transforms independent:
-  // outer = parallax/float/hover lift, tilt = cursor/drag/keys/idle,
+  // outer = parallax/float/entrance pose, tilt = cursor/drag/keys/idle,
   // spin = click animation.
   const outer = useRef<THREE.Group>(null);
   const tilt = useRef<THREE.Group>(null);
@@ -132,20 +184,23 @@ function Sculpture({
   // Animation state: mutable, never in React state.
   const s = useRef({
     t: 0,
-    arrivalStart: 0,
     arrivalPulsed: false,
+    /** Frames actually rendered before the canvas is revealed. */
+    framesRendered: 0,
+    revealed: false,
     yaw: 0,
     pitch: 0,
     yawV: { v: 0 },
     pitchV: { v: 0 },
+    /** Spring-smoothed cursor distance from centre (drives the glow). */
+    reach: 0,
+    reachV: { v: 0 },
     px: 0,
     py: 0,
     pxV: { v: 0 },
     pyV: { v: 0 },
     drag: 0,
     dragV: { v: 0 },
-    hover: 0,
-    hoverV: { v: 0 },
     move: null as MoveId | null,
     lastMove: null as MoveId | null,
     moveStart: 0,
@@ -168,10 +223,9 @@ function Sculpture({
     s.current.spinConsumed = input.current.spinRequests;
     s.current.resetConsumed = input.current.resetRequests;
     const unregister = registerWake(() => invalidate());
-    onReady();
     invalidate();
     return unregister;
-  }, [input, registerWake, invalidate, onReady]);
+  }, [input, registerWake, invalidate]);
 
   useEffect(() => {
     invalidate();
@@ -183,23 +237,44 @@ function Sculpture({
     const dt = Math.min(rawDelta, 1 / 20);
     st.t += dt;
     const t = st.t;
-    const still = reducedMotion || holdFront;
+    const still = reducedMotion || holdFront || frozen;
+
+    // Reveal only once real frames exist: frame 1 compiles shaders and builds
+    // the environment map, frame 2 is a normal frame. Until then the start
+    // poster stays on screen and nothing animates. The entrance starts after
+    // the hand-over, so no part of it plays against a hidden canvas.
+    if (!st.revealed) {
+      st.framesRendered++;
+      if (st.framesRendered >= 2) {
+        st.revealed = true;
+        onReady();
+      }
+    }
 
     // Reset: replay arrival from a clean state.
     if (inp.resetRequests !== st.resetConsumed) {
       st.resetConsumed = inp.resetRequests;
       st.spinConsumed = inp.spinRequests;
-      st.arrivalStart = t;
       st.arrivalPulsed = false;
       st.move = null;
       st.pulseStart = -1;
       st.flash = 0;
     }
 
-    // --- Arrival -----------------------------------------------------------
-    const arrival = reducedMotion ? 1 : easeOutCubic(clamp01((t - st.arrivalStart) / TIMING.arrivalSeconds));
-    const away = holdFront ? 0 : 1 - arrival;
-    if (!st.arrivalPulsed && arrival >= TIMING.arrivalPulseAt && !reducedMotion) {
+    // --- Entrance -------------------------------------------------------------
+    // Pose and timing come from InteractiveMark's entrance controller (the
+    // same values the posters were rendered at), so the canvas always takes
+    // over at exactly the visible pose.
+    const entrance = reducedMotion || holdFront ? { q: 1, t: 1 } : getEntrance();
+    const arrival = clamp01(entrance.q);
+    const away = 1 - arrival;
+    // Pointer response and idle drift blend in over the final part of the
+    // entrance (time-based), so control is already live when it lands.
+    const settled = frozen
+      ? 0
+      : (entrance.engage ?? smoothstep01((entrance.t - ENTRANCE.engageFrom) / (1 - ENTRANCE.engageFrom)));
+    if (!st.arrivalPulsed && (frozen || (st.revealed && entrance.t >= 1))) st.arrivalPulsed = true; // took over at rest: no pulse
+    if (!st.arrivalPulsed && st.revealed && entrance.t >= ENTRANCE.pulseAt && !reducedMotion) {
       st.arrivalPulsed = true;
       st.pulseStart = t;
     }
@@ -256,21 +331,19 @@ function Sculpture({
     // the front face turns away (z of the rotated front normal).
     const facing = Math.abs(st.frontNormal.set(0, 0, 1).applyQuaternion(st.moveQuat).z);
 
-    // --- Hover --------------------------------------------------------------
-    st.hover = smoothDamp(st.hover, inp.hover && !holdFront ? 1 : 0, st.hoverV, TIMING.hoverSmoothTime, dt);
-
     // --- Orientation: cursor + keys + idle, clamped to the envelope ----------
     const maxYaw = deg(response.yawDeg);
     const maxPitch = deg(response.pitchDeg);
-    const idle = still ? 0 : arrival;
+    const idle = still ? 0 : settled;
     const cursorOn = !still;
+    const engage = settled; // pointer response fades in with the settle
     const targetYaw = THREE.MathUtils.clamp(
-      (cursorOn ? inp.pointer.x * maxYaw : 0) + inp.keyYaw + idle * deg(AMPLITUDE.idleYawDeg) * Math.sin(t * 0.31),
+      (cursorOn ? inp.pointer.x * maxYaw * engage : 0) + inp.keyYaw + idle * deg(AMPLITUDE.idleYawDeg) * Math.sin(t * 0.31),
       -maxYaw,
       maxYaw,
     );
     const targetPitch = THREE.MathUtils.clamp(
-      (cursorOn ? inp.pointer.y * maxPitch : 0) +
+      (cursorOn ? inp.pointer.y * maxPitch * engage : 0) +
         inp.keyPitch +
         idle * deg(AMPLITUDE.idlePitchDeg) * Math.sin(t * 0.23 + 1.1),
       -maxPitch,
@@ -296,31 +369,28 @@ function Sculpture({
     }
 
     // Parallax: nearest layer shifts against the cursor (never chases it).
-    const ptrX = cursorOn ? inp.pointer.x : 0;
-    const ptrY = cursorOn ? inp.pointer.y : 0;
+    const ptrX = cursorOn ? inp.pointer.x * engage : 0;
+    const ptrY = cursorOn ? inp.pointer.y * engage : 0;
     st.px = smoothDamp(st.px, -ptrX * response.parallaxXPx * worldPerPx, st.pxV, TIMING.tiltSmoothTime, dt);
     st.py = smoothDamp(st.py, ptrY * response.parallaxYPx * worldPerPx, st.pyV, TIMING.tiltSmoothTime, dt);
 
-    const lift = still ? 0 : st.hover;
     const float = idle * AMPLITUDE.idleFloat * Math.sin(t * 0.9);
 
     // Composition (parent -> child), each with one job, all pivoting on the
     // model centre:
-    //   outer:  position (parallax, float, hover lift, move lift/forward),
-    //           scale (arrival, hover, move crest), arrival settle rotation
+    //   outer:  position (parallax, float, entrance drop, move lift/forward),
+    //           scale (entrance, move crest), entrance settle rotation
     //   move:   click move only, one quaternion composed per move (moves.ts)
     //   tilt:   pointer / keys / idle / touch-drag (held during a move)
     if (outer.current) {
       outer.current.position.set(
         st.px,
-        st.py + float + lift * AMPLITUDE.hoverLift + crest * AMPLITUDE.manoeuvreLift - away * AMPLITUDE.arrivalDrop,
+        st.py + float + crest * AMPLITUDE.manoeuvreLift - away * AMPLITUDE.arrivalDrop,
         crest * crestForward,
       );
       outer.current.rotation.set(away * deg(AMPLITUDE.arrivalPitchDeg), away * deg(AMPLITUDE.arrivalYawDeg), 0);
       outer.current.scale.setScalar(
-        THREE.MathUtils.lerp(AMPLITUDE.arrivalScale, 1, holdFront ? 1 : arrival) *
-          (1 + lift * AMPLITUDE.hoverScale) *
-          (1 + crest * crestScale),
+        THREE.MathUtils.lerp(AMPLITUDE.arrivalScale, 1, holdFront ? 1 : arrival) * (1 + crest * crestScale),
       );
     }
     moveGroup.current?.quaternion.copy(st.moveQuat);
@@ -359,23 +429,36 @@ function Sculpture({
     // --- Illumination -------------------------------------------------------
     st.flash *= Math.exp(-dt * 3.2);
     if (st.flash < 1e-3) st.flash = 0;
-    const lit = holdFront ? 1 : arrival;
-    const reach = Math.min(1, Math.hypot(ptrX, ptrY));
+    // Materials start near the static SVG's brightness (no dark hand-over
+    // frame); the glow and shadow layers start from zero, like the SVG.
+    const lit = holdFront ? 1 : 0.6 + 0.4 * arrival;
+    const glowOn = holdFront ? 1 : arrival * arrival; // the glow builds through the entrance
+    // The glow follows the cursor through the same spring as the tilt. It used
+    // to read the raw cursor, so every pointer event could resize the large
+    // halo by up to 4% in a single frame -- visible as jerks around the mark.
+    st.reach = smoothDamp(st.reach, Math.min(1, Math.hypot(ptrX, ptrY)), st.reachV, TIMING.tiltSmoothTime, dt);
+    const reach = st.reach;
     const breathe = still ? 1 : 1 + 0.06 * Math.sin(t * 1.05);
 
     if (whiteMat.current) whiteMat.current.emissiveIntensity = 0.04 + 0.16 * lit + 0.1 * st.flash + 0.06 * surge + 0.08 * accent;
     if (blueMat.current) blueMat.current.emissiveIntensity = 0.1 + 0.16 * lit + 0.35 * st.flash + 0.3 * surge + 0.4 * accent;
-    if (rimLight.current) rimLight.current.intensity = (0.9 + 1.3 * st.hover + 1.2 * st.flash + 1.2 * surge + 1.4 * accent) * lit;
+    if (rimLight.current) rimLight.current.intensity = (0.9 + 1.2 * st.flash + 1.2 * surge + 1.4 * accent) * lit;
     get().scene.environmentIntensity = 0.55 + 0.45 * lit;
 
     if (glowMat.current) {
-      glowMat.current.opacity =
-        GLOW.strength * lit * breathe * (0.35 + 0.65 * facing) * (1 + 0.3 * st.hover + 0.25 * reach + 0.6 * st.flash + AMPLITUDE.manoeuvreGlow * surge + 0.8 * accent);
+      glowMat.current.opacity = refined
+        ? FIELD.strength * glowOn // steady: no breathing, cursor or move response
+        : GLOW.strength * glowOn * breathe * (0.35 + 0.65 * facing) * (1 + 0.25 * reach + 0.6 * st.flash + AMPLITUDE.manoeuvreGlow * surge + 0.8 * accent);
     }
     if (glowMesh.current) {
-      // Deeper layer: parallaxes less, so the halo slides out towards the cursor.
-      glowMesh.current.position.set(st.px * 0.35, st.py * 0.35 + float * 0.5 - away * AMPLITUDE.arrivalDrop, -0.7);
-      glowMesh.current.scale.setScalar(1 + 0.04 * st.hover + 0.04 * reach);
+      if (refined) {
+        // Fixed behind the resting mark (it only arrives with the entrance).
+        glowMesh.current.position.set(0, -FIELD.drop - away * AMPLITUDE.arrivalDrop, -0.7);
+      } else {
+        // Deeper layer: parallaxes less, so the halo slides out towards the cursor.
+        glowMesh.current.position.set(st.px * 0.35, st.py * 0.35 + float * 0.5 - away * AMPLITUDE.arrivalDrop, -0.7);
+        glowMesh.current.scale.setScalar(1 + 0.04 * reach);
+      }
     }
     if (shadowMesh.current) {
       // Soft drop shadow cast onto the glow: deepens the sense of layers.
@@ -385,18 +468,18 @@ function Sculpture({
         -0.45,
       );
     }
-    if (shadowMat.current) shadowMat.current.opacity = SHADOW.opacity * lit * facing * facing;
+    if (shadowMat.current) shadowMat.current.opacity = SHADOW.opacity * glowOn * facing * facing;
     // Highlight sweep light moves against the turn, so bevels catch it.
     if (sweepLight.current) sweepLight.current.position.set(-(st.yaw + st.drag) * 18, 2.5 + st.pitch * 18, 5);
 
     // --- Keep rendering only while something moves --------------------------
     const settling =
       Math.abs(st.yawV.v) + Math.abs(st.pitchV.v) + Math.abs(st.pxV.v) + Math.abs(st.pyV.v) > 1e-4 ||
-      Math.abs(st.dragV.v) + Math.abs(st.hoverV.v) > 1e-4 ||
+      Math.abs(st.dragV.v) + Math.abs(st.reachV.v) > 1e-4 ||
       Math.abs(st.drag - (inp.dragging ? inp.dragYaw : 0)) > 1e-4 ||
       Math.abs(st.yaw - (holdFront ? 0 : targetYaw)) > 1e-4;
     const animating =
-      !still || arrival < 1 || st.move !== null || pulseActive || st.flash > 0 || settling || inp.dragging;
+      !st.revealed || !still || arrival < 1 || st.move !== null || pulseActive || st.flash > 0 || settling || inp.dragging;
     if (animating && !paused) invalidate();
   });
 
@@ -417,10 +500,12 @@ function Sculpture({
           toneMapped={false}
         />
       </mesh>
-      <mesh ref={shadowMesh} position={[0, 0, -0.45]} renderOrder={-1}>
-        <planeGeometry args={[shadow.worldWidth, shadow.worldHeight]} />
-        <meshBasicMaterial ref={shadowMat} map={shadow.texture} transparent opacity={0} depthWrite={false} />
-      </mesh>
+      {!refined && (
+        <mesh ref={shadowMesh} position={[0, 0, -0.45]} renderOrder={-1}>
+          <planeGeometry args={[shadow.worldWidth, shadow.worldHeight]} />
+          <meshBasicMaterial ref={shadowMat} map={shadow.texture} transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
 
       <directionalLight ref={rimLight} position={[1.5, 3, -6]} intensity={0} color="#3d7bff" />
       <directionalLight ref={sweepLight} position={[0, 2.5, 5]} intensity={0.9} color="#ffffff" />
@@ -474,11 +559,10 @@ function Sculpture({
   );
 }
 
-function CameraFit() {
+function CameraFit({ contours }: { contours: MarkContours }) {
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
-  const contours = useMarkContours();
 
   useEffect(() => {
     const { distance } = fitMetrics(size.width, size.height, contours, SILHOUETTE_Z);
@@ -519,9 +603,12 @@ function Studio({ lowPower }: { lowPower: boolean }) {
 }
 
 export default function InteractiveScene(props: InteractiveSceneProps) {
+  const contours = useLoadedMarkContours();
+  if (!contours) return null;
   return (
     <Canvas
       frameloop="demand"
+      resize={props.layoutSized ? { offsetSize: true } : undefined}
       dpr={[1, props.lowPower ? 1.5 : 2]}
       gl={{ antialias: true, alpha: true, toneMapping: THREE.NeutralToneMapping, powerPreference: "high-performance" }}
       // Input is handled by the accessible element layered above the canvas.
@@ -530,8 +617,8 @@ export default function InteractiveScene(props: InteractiveSceneProps) {
     >
       <Studio lowPower={props.lowPower} />
       <Suspense fallback={null}>
-        <CameraFit />
-        <Sculpture {...props} />
+        <CameraFit contours={contours} />
+        <Sculpture {...props} contours={contours} />
       </Suspense>
     </Canvas>
   );

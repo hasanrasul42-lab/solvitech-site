@@ -181,4 +181,36 @@ export function createGlowTexture(contours: MarkContours, color: string, softnes
   };
 }
 
+/**
+ * Shapeless soft light field: an elliptical gradient with a long, smooth
+ * (near-Gaussian) falloff, sized relative to the mark. Unlike
+ * createGlowTexture it carries no trace of the silhouette, so it reads as
+ * ambient illumination rather than an outline, at any orientation.
+ */
+export function createFieldTexture(contours: MarkContours, color: string, widthScale: number, heightScale: number) {
+  const size = contours.bounds.getSize(new THREE.Vector2());
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    const c = new THREE.Color(color);
+    const rgb = `${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)}`;
+    // exp(-3.2 r^2), sampled: no visible ring, ~0 at the edge.
+    for (let i = 0; i <= 10; i++) {
+      const r = i / 10;
+      gradient.addColorStop(r, `rgba(${rgb}, ${i === 10 ? 0 : Math.exp(-3.2 * r * r).toFixed(4)})`);
+    }
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 256, 256);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return {
+    texture,
+    worldWidth: size.x * widthScale * contours.scale,
+    worldHeight: size.y * heightScale * contours.scale,
+  };
+}
+
 export const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);

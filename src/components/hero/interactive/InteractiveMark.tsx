@@ -8,25 +8,50 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  useSyncExternalStore,
+  type ReactNode,
   type RefObject,
 } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import SceneErrorBoundary from "../../mark/SceneErrorBoundary";
 import { useMediaQuery, useOffscreen, useWebGLSupport } from "../../mark/browser";
-import { MARK_SVG_URL } from "../../mark/markGeometry";
 import {
   AMPLITUDE,
   DEFAULT_RESPONSE,
+  ENTRANCE,
+  MARK_ENTRANCE_EVENT,
   RESPONSE_PRESETS,
   createInteractionInput,
+  entranceEase,
+  type EntranceProgress,
+  type EntranceState,
   type InteractionInput,
+  type MarkEntranceDetail,
   type ResponsePreset,
 } from "./interactionConfig";
-import { RIBBON_BOX, RIBBON_BOX_CSS, VIEWBOX } from "./layout";
+import { POSTER, RIBBON_BOX, RIBBON_BOX_CSS, VIEWBOX, posterUrls } from "./layout";
+import type { Lighting } from "./InteractiveScene";
 import type { MoveId } from "./moves";
 
-const InteractiveScene = dynamic(() => import("./InteractiveScene"), { ssr: false });
+// The 3D scene chunk starts loading as soon as this module runs in the
+// browser. It is deliberately not next/dynamic (React.lazy): a lazy component
+// suspends once even when its chunk is ready, and React 19 then holds back the
+// reveal of that boundary for ~300 ms -- a dead wait before the entrance.
+// Instead the loaded module is read from a tiny external store (no Suspense).
+type SceneModule = typeof import("./InteractiveScene");
+let sceneModule: SceneModule | null = null;
+const sceneListeners = new Set<() => void>();
+if (typeof window !== "undefined") {
+  void import("./InteractiveScene").then((mod) => {
+    sceneModule = mod;
+    sceneListeners.forEach((listener) => listener());
+  });
+}
+const subscribeScene = (listener: () => void) => {
+  sceneListeners.add(listener);
+  return () => sceneListeners.delete(listener);
+};
+const useSceneModule = () => useSyncExternalStore(subscribeScene, () => sceneModule, () => null);
 
 const REFERENCE = { url: "/brand/original-reference.png", size: 1254, svgOriginX: 407, svgOriginY: 331 };
 
@@ -45,28 +70,65 @@ function ribbonBoxStyle(scale = 1) {
   };
 }
 
-function StaticMark({ visible = true, fade }: { visible?: boolean; fade: boolean }) {
-  // The <img> shows the whole SVG viewBox; scale the ribbon box up to it.
+/** Box the posters were cropped to: the ribbon box scaled by POSTER.scaleX/Y. */
+const posterBoxStyle = {
+  height: `calc(${RIBBON_BOX_CSS.height} * ${POSTER.scaleY})`,
+  aspectRatio: `${RIBBON_BOX.w * POSTER.scaleX} / ${RIBBON_BOX.h * POSTER.scaleY}`,
+};
+
+/**
+ * 3D-rendered posters of the real scene, shown until the WebGL canvas takes
+ * over. They never move: all motion is performed by the real geometry.
+ * - First paint: the start-pose poster (~14KB). A <picture> media source swaps
+ *   in the resting-pose poster for reduced-motion visitors, so they never see
+ *   an entrance pose.
+ * - Fallback (WebGL slow or unavailable): the start poster fades out while the
+ *   resting-pose poster (~96KB, only requested then) fades in just behind it,
+ *   so the two poses never show as a double exposure.
+ */
+function Posters({
+  layerRef,
+  final,
+  restOnly = false,
+  lighting = "approved",
+}: {
+  layerRef?: RefObject<HTMLDivElement | null>;
+  final: boolean;
+  /** restStart: only the resting-pose poster, with no swap animation. */
+  restOnly?: boolean;
+  lighting?: Lighting;
+}) {
+  const layer = "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+  const urls = posterUrls(lighting);
+  if (restOnly) {
+    return (
+      <div ref={layerRef} aria-hidden className="pointer-events-none absolute inset-0">
+        {/* eslint-disable-next-line @next/next/no-img-element -- plain, unoptimised poster asset */}
+        <img
+          src={urls.finalUrl}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className={layer}
+          style={posterBoxStyle}
+        />
+      </div>
+    );
+  }
   return (
-    <div
-      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-      style={{ ...ribbonBoxStyle(), opacity: visible ? 1 : 0, transition: fade ? "opacity 700ms ease-out" : undefined }}
-    >
-      <Image
-        src={MARK_SVG_URL}
-        alt=""
-        width={VIEWBOX.w}
-        height={VIEWBOX.h}
-        unoptimized
-        priority
-        className="absolute max-w-none"
-        style={{
-          width: `${(VIEWBOX.w / RIBBON_BOX.w) * 100}%`,
-          height: `${(VIEWBOX.h / RIBBON_BOX.h) * 100}%`,
-          left: `${(-VIEWBOX.ribbonX / RIBBON_BOX.w) * 100}%`,
-          top: `${(-VIEWBOX.ribbonY / RIBBON_BOX.h) * 100}%`,
-        }}
-      />
+    // Hidden at hand-over (inline opacity, set directly by the controller).
+    // The first-paint arrival is on the stage (.mark-arrive), shared with the canvas.
+    <div ref={layerRef} aria-hidden className="pointer-events-none absolute inset-0">
+      <picture className={`${layer} ${final ? "mark-poster-out" : ""}`} style={posterBoxStyle}>
+        <source srcSet={urls.finalUrl} media="(prefers-reduced-motion: reduce)" />
+        <img src={urls.startUrl} alt="" fetchPriority="high" decoding="async" className="h-full w-full" />
+      </picture>
+      {final && (
+        <div className={`${layer} mark-poster-fallback`} style={posterBoxStyle}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- plain, unoptimised poster asset */}
+          <img src={urls.finalUrl} alt="" decoding="async" className="h-full w-full" />
+        </div>
+      )}
     </div>
   );
 }
@@ -113,24 +175,58 @@ export interface InteractiveMarkProps {
   moveRequest?: { move: MoveId | "shuffle" | "replay"; token: number };
   /** Preview only: told which move starts on each accepted click. */
   onMoveStart?: (id: MoveId) => void;
+  /**
+   * Poster capture only (/3d-lab/poster-capture): render the scene frozen at
+   * entrance pose q, with no posters, idle, cursor response or hit target.
+   */
+  captureQ?: number;
+  /**
+   * Start at the resting pose instead of playing the 3D entrance: the
+   * resting-pose poster shows first and the 3D takes over at that pose when
+   * ready. For entrances choreographed outside the mark (entrance prototype).
+   */
+  restStart?: boolean;
+  /**
+   * restStart: cursor response and idle drift blend in from this
+   * performance.now() time (or from the 3D takeover, whichever is later).
+   */
+  interactiveFrom?: number;
+  /** Lab only: report the 3D as ready no earlier than this performance.now() time. */
+  debugReadyAt?: number;
+  /** Lab only: behave as if WebGL were unavailable. */
+  debugNoWebGL?: boolean;
+  /** Rendered inside the stage, above the mark (moves with the stage). */
+  overlay?: ReactNode;
+  /** Background halo and shadow treatment (A/B); posters follow it. */
+  lighting?: Lighting;
 }
 
 /**
  * Interactive 3D Solvitech mark for the homepage hero.
  *
+ * Entrance (one continuous 3D arrival):
+ *   poster    -> a 3D-rendered poster of the real scene at the start pose
+ *                shows at first paint (opacity fade only);
+ *   handover  -> once WebGL has rendered, the canvas fades in over it at
+ *                exactly the same pose;
+ *   entering  -> the real geometry moves from the start pose to rest, with
+ *                cursor response and idle drift blending in over the end;
+ *   complete
+ *   fallback  -> WebGL not ready within ENTRANCE.maxWaitMs (or unavailable,
+ *                or reduced motion): crossfade to the resting-pose poster; the
+ *                3D later takes over at rest. No late entrance.
+ *
  * Input (all handled outside React state, so pointer movement never
  * re-renders):
  * - Cursor anywhere on the page tilts the mark towards it, with parallax.
- * - Hover over the mark: lift, stronger rim light and glow.
+ *   The cursor is tracked from hydration, before the 3D exists.
+ * - No hover state: the mark responds to the cursor the same way everywhere;
+ *   over the mark it is simply clickable.
  * - Click / tap / Enter / Space: one of five acrobatic moves (moves.ts),
- *   drawn from a shuffle bag. Extra requests
- *   during an animation are dropped.
+ *   drawn from a shuffle bag. Extra requests during an animation are dropped.
  * - Touch: horizontal drag previews rotation, release returns; vertical
  *   swipes scroll the page (touch-action: pan-y).
  * - Arrow keys tilt in steps; Escape or blur recentres.
- *
- * Fallbacks: SSR / no WebGL / render error show the flat SVG. Reduced motion
- * keeps the 3D front pose still and turns clicks into a light pulse.
  */
 export default function InteractiveMark({
   className = "",
@@ -139,13 +235,23 @@ export default function InteractiveMark({
   referenceOpacity = 0,
   moveRequest,
   onMoveStart,
+  captureQ,
+  restStart = false,
+  interactiveFrom = 0,
+  debugReadyAt = 0,
+  debugNoWebGL = false,
+  overlay,
+  lighting = "approved",
 }: InteractiveMarkProps) {
+  const capture = captureQ !== undefined;
   const stage = useRef<HTMLDivElement>(null);
   const hitBox = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InteractionInput | null>(null);
   if (inputRef.current === null) inputRef.current = createInteractionInput();
 
-  const hasWebGL = useWebGLSupport();
+  const detectedWebGL = useWebGLSupport();
+  const hasWebGL = debugNoWebGL ? false : detectedWebGL;
+  const InteractiveScene = useSceneModule()?.default;
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const coarsePointer = useMediaQuery("(pointer: coarse)");
   const smallScreen = useMediaQuery("(max-width: 640px)");
@@ -153,8 +259,138 @@ export default function InteractiveMark({
   const descriptionId = useId();
   const strength = RESPONSE_PRESETS[response];
 
+  // --- Entrance controller --------------------------------------------------
+  // `ready`      the scene has rendered real frames; the canvas fades in over
+  //              the poster (which stays fully opaque underneath).
+  // `fallback`   no 3D entrance: the resting-pose poster is shown instead.
+  // After hand-over the posters are hidden via `posterLayer` (no re-render).
   const [ready, setReady] = useState(false);
-  const onReady = useCallback(() => setReady(true), []);
+  const [timedOut, setTimedOut] = useState(false);
+  // Fallback only: the canvas fades in once the resting poster has arrived.
+  const [canvasShown, setCanvasShown] = useState(false);
+  const timedOutAt = useRef(0);
+  const takeoverAt = useRef(0);
+  const debugReadyAtRef = useRef(debugReadyAt);
+  useEffect(() => {
+    debugReadyAtRef.current = debugReadyAt;
+  }, [debugReadyAt]);
+  const onReady = useCallback(() => {
+    const wait = debugReadyAtRef.current - performance.now();
+    if (wait > 0) setTimeout(() => setReady(true), wait);
+    else setReady(true);
+  }, []);
+  const interactiveFromRef = useRef(interactiveFrom);
+  useEffect(() => {
+    interactiveFromRef.current = interactiveFrom;
+  }, [interactiveFrom]);
+
+  /** "pending" until the entrance runs; "running" while it plays; "rest" = q 1. */
+  const entranceMode = useRef<"pending" | "running" | "rest">(restStart ? "rest" : "pending");
+  /**
+   * Frame-paced entrance clock. Each rendered frame advances the entrance by
+   * its real interval, capped near the display's normal frame time, so a
+   * main-thread hitch slows the motion for a frame instead of making the
+   * mark jump (most visible at the start, where the entrance is fastest).
+   * `frame` is an average of normal frame intervals, measured from the
+   * hand-over frames onwards.
+   */
+  const entranceClock = useRef({ last: 0, elapsed: 0, frame: 1000 / 60 });
+  const posterLayer = useRef<HTMLDivElement>(null);
+
+  // Exposed on the stage as data-entrance (for tests and debugging); no React state.
+  const setEntranceState = useCallback(
+    (state: EntranceState) => stage.current?.setAttribute("data-entrance", state),
+    [],
+  );
+
+  const getEntrance = useCallback((): EntranceProgress => {
+    if (captureQ !== undefined) return { q: captureQ, t: 0 };
+    const now = performance.now();
+    if (entranceMode.current === "rest") {
+      if (!timedOutAt.current && !restStart) return { q: 1, t: 1 };
+      // Took over from the resting poster: the first frames match it exactly
+      // (no cursor tilt yet), then cursor response and idle drift blend in.
+      const from = Math.max(takeoverAt.current + ENTRANCE.handoverMs, interactiveFromRef.current);
+      const since = takeoverAt.current ? now - from : -1;
+      const x = Math.min(1, Math.max(0, since / ENTRANCE.takeoverEngageMs));
+      return { q: 1, t: 1, engage: x * x * (3 - 2 * x) };
+    }
+    const clock = entranceClock.current;
+    const dt = clock.last ? now - clock.last : 0;
+    clock.last = now;
+    // A single long frame barely moves the estimate; a genuinely slower
+    // display (e.g. 30 fps) still raises it within a few frames.
+    if (dt > 0) clock.frame += (Math.min(dt, clock.frame * 2) - clock.frame) * 0.15;
+    if (entranceMode.current === "pending") return { q: 0, t: 0 };
+    clock.elapsed += Math.min(dt, clock.frame * 1.5);
+    const t = Math.min(1, clock.elapsed / ENTRANCE.durationMs);
+    if (t >= 1) {
+      entranceMode.current = "rest";
+      setEntranceState("complete");
+    }
+    return { q: entranceEase(t), t };
+  }, [captureQ, restStart, setEntranceState]);
+
+  // No 3D entrance (reduced motion, no WebGL): show the resting poster.
+  useEffect(() => {
+    if (capture) return;
+    if (reducedMotion || hasWebGL === false) {
+      entranceMode.current = "rest";
+      setEntranceState("fallback");
+    }
+  }, [reducedMotion, hasWebGL, capture, setEntranceState]);
+
+  // Bounded wait: if WebGL has not rendered by maxWaitMs after navigation
+  // start, settle on the resting poster instead of a late entrance.
+  useEffect(() => {
+    if (capture || ready) return;
+    const remaining = Math.max(0, ENTRANCE.maxWaitMs - performance.now());
+    const timer = setTimeout(() => {
+      if (entranceMode.current !== "pending") return;
+      entranceMode.current = "rest";
+      timedOutAt.current = performance.now();
+      setTimedOut(true);
+      setEntranceState("fallback");
+    }, remaining);
+    return () => clearTimeout(timer);
+  }, [ready, capture, setEntranceState]);
+
+  // Hand-over: canvas fades in over the poster at the same pose, then the
+  // entrance starts on the real geometry (or, after a fallback, it is already
+  // at rest and replaces the resting poster once that has fully arrived, so
+  // the two never overlap mid-swap).
+  useEffect(() => {
+    if (!ready || capture) return;
+    if (entranceMode.current === "pending") setEntranceState("handover");
+    const fade = reducedMotion ? 0 : ENTRANCE.handoverMs;
+    const wait = timedOutAt.current
+      ? Math.max(0, timedOutAt.current + ENTRANCE.fallbackPosterMs - performance.now())
+      : 0;
+    const show = setTimeout(() => {
+      takeoverAt.current = performance.now();
+      if (timedOutAt.current) setCanvasShown(true);
+    }, wait);
+    const timer = setTimeout(() => {
+      if (entranceMode.current === "pending") {
+        entranceMode.current = "running";
+        entranceClock.current.elapsed = 0;
+        setEntranceState("entering");
+        // Lets the hero copy (already moving since first paint) retime itself
+        // to finish exactly with the mark.
+        const detail: MarkEntranceDetail = { endsAt: performance.now() + ENTRANCE.durationMs };
+        stage.current?.dispatchEvent(new CustomEvent(MARK_ENTRANCE_EVENT, { bubbles: true, detail }));
+      } else {
+        setEntranceState("complete");
+      }
+      // Hide the posters directly: a React update here would re-render the
+      // canvas tree in the entrance's first (fastest) frames.
+      if (posterLayer.current) posterLayer.current.style.opacity = "0";
+    }, wait + fade + 20);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(timer);
+    };
+  }, [ready, reducedMotion, capture, setEntranceState]);
 
   // The scene registers its frame-request function here; input handlers call
   // wake() after writing to the input object.
@@ -167,7 +403,7 @@ export default function InteractiveMark({
     };
   }, []);
 
-  // Reset requests from the parent.
+  // Reset requests from the parent (preview): replay the 3D entrance.
   const lastReset = useRef(resetToken);
   useEffect(() => {
     if (resetToken === lastReset.current) return;
@@ -176,8 +412,14 @@ export default function InteractiveMark({
     input.resetRequests++;
     input.keyYaw = input.keyPitch = 0;
     input.dragging = false;
+    if (!reducedMotion) {
+      entranceMode.current = "running";
+      entranceClock.current.elapsed = 0;
+      entranceClock.current.last = 0;
+      setEntranceState("entering");
+    }
     wake();
-  }, [resetToken, wake]);
+  }, [resetToken, wake, reducedMotion, setEntranceState]);
 
   // Explicit move requests from the preview panel.
   const lastMoveToken = useRef(moveRequest?.token ?? 0);
@@ -190,12 +432,14 @@ export default function InteractiveMark({
     wake();
   }, [moveRequest, wake]);
 
-  // Cursor position relative to the mark, normalised by half the viewport.
+  // Cursor position relative to the (fixed) stage centre, normalised by half
+  // the viewport. Tracked from hydration, so the target is already correct
+  // when the entrance blends pointer control in.
   useEffect(() => {
     const input = inputRef.current!;
     const move = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
-      const rect = hitBox.current?.getBoundingClientRect() ?? stage.current?.getBoundingClientRect();
+      const rect = stage.current?.getBoundingClientRect();
       const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
       const cy = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
       input.pointer.set(
@@ -206,7 +450,6 @@ export default function InteractiveMark({
     };
     const reset = () => {
       input.pointer.set(0, 0);
-      input.hover = false;
       wake();
     };
     window.addEventListener("pointermove", move, { passive: true });
@@ -238,16 +481,6 @@ export default function InteractiveMark({
     }
   };
 
-  const onPointerEnter = (e: ReactPointerEvent) => {
-    if (e.pointerType !== "mouse") return;
-    inputRef.current!.hover = true;
-    wake();
-  };
-  const onPointerLeave = (e: ReactPointerEvent) => {
-    if (e.pointerType !== "mouse") return;
-    inputRef.current!.hover = false;
-    wake();
-  };
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     gesture.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now(), moved: false, drag: false };
@@ -335,36 +568,52 @@ export default function InteractiveMark({
   };
 
   const interactive = hasWebGL === true;
+  // Normal path: the canvas fades in as soon as it is ready. Fallback: only
+  // once the resting poster has fully arrived (canvasShown).
+  const canvasVisible = capture || (ready && !timedOut) || canvasShown;
+  // Resting-pose poster: no 3D entrance will play.
+  const fallback = timedOut || reducedMotion || hasWebGL === false;
 
   return (
     <div
       ref={stage}
-      className={`relative overflow-hidden [container-type:size] ${className}`}
+      data-entrance="poster"
+      className={`relative overflow-hidden [container-type:size] ${capture || restStart ? "" : "mark-arrive"} ${className}`}
       {...(!interactive ? { role: "img", "aria-label": "Solvitech" } : {})}
     >
-      <StaticMark visible={!ready || !interactive} fade={!reducedMotion} />
+      {!capture && <Posters layerRef={posterLayer} final={fallback} restOnly={restStart} lighting={lighting} />}
       {interactive && (
-        <SceneErrorBoundary fallback={<StaticMark fade={false} />}>
+        <SceneErrorBoundary fallback={<Posters final restOnly={restStart} lighting={lighting} />}>
           <div
             className="absolute inset-0"
-            style={{ opacity: ready ? 1 : 0, transition: reducedMotion ? undefined : "opacity 500ms ease-out" }}
+            style={{
+              opacity: canvasVisible ? 1 : 0,
+              transition: capture || reducedMotion ? undefined : `opacity ${ENTRANCE.handoverMs}ms linear`,
+            }}
           >
-            <InteractiveScene
-              input={inputRef as RefObject<InteractionInput>}
-              registerWake={registerWake}
-              response={strength}
-              reducedMotion={reducedMotion}
-              holdFront={referenceOpacity > 0}
-              paused={offscreen}
-              lowPower={coarsePointer || smallScreen}
-              onReady={onReady}
-              onMoveStart={onMoveStart}
-            />
+            {InteractiveScene && (
+              <InteractiveScene
+                input={inputRef as RefObject<InteractionInput>}
+                registerWake={registerWake}
+                getEntrance={getEntrance}
+                frozen={capture}
+                response={strength}
+                reducedMotion={reducedMotion}
+                holdFront={referenceOpacity > 0}
+                paused={offscreen}
+                lowPower={coarsePointer || smallScreen}
+                onReady={onReady}
+                onMoveStart={onMoveStart}
+                layoutSized={restStart}
+                lighting={lighting}
+              />
+            )}
           </div>
         </SceneErrorBoundary>
       )}
       {referenceOpacity > 0 && <ReferenceOverlay opacity={referenceOpacity} />}
-      {interactive && (
+      {overlay}
+      {interactive && !capture && (
         <>
           <div
             ref={hitBox}
@@ -374,8 +623,6 @@ export default function InteractiveMark({
             aria-describedby={descriptionId}
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none rounded-[32px] [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5c9dff]"
             style={{ ...ribbonBoxStyle(1.12), touchAction: "pan-y" }}
-            onPointerEnter={onPointerEnter}
-            onPointerLeave={onPointerLeave}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
