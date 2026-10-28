@@ -87,11 +87,13 @@ export const SUPPORTING: Pathway[] = [
   {
     id: "websites",
     title: "Websites & Digital Experiences",
+    page: "/solutions/websites",
     line: "Fast, accessible websites, e-commerce and customer-facing experiences, built on the same engineering foundations.",
   },
   {
     id: "growth",
     title: "SEO & Digital Growth",
+    page: "/solutions/digital-growth",
     line: "Search visibility, conversion improvements and clear measurement, so the right people find you and get in touch.",
   },
 ];
@@ -100,4 +102,5 @@ export const SOLUTIONS_CLOSING = {
   line: "Not sure which of these you need? Start with the problem.",
   /** The homepage contact chapter (or the Contact page once it exists). */
   cta: { label: "Describe your project", href: "/#contact" },
+  hub: { label: "Explore all solutions", href: "/solutions" },
 };

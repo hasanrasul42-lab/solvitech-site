@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
+import { SERVICES } from "@/config/services";
 import { NAV_CTA, NAV_LINKS, SITE } from "@/config/site";
 import BrandLogo from "./BrandLogo";
 
@@ -24,16 +25,31 @@ export default function SiteFooter() {
             Bespoke software, AI, automation and integrations, engineered around how your business works.
           </p>
         </div>
-        <nav aria-label="Footer" className="md:col-span-7 md:justify-self-end">
-          <ul className="grid grid-cols-2 gap-x-10 gap-y-3 sm:flex sm:flex-wrap sm:gap-x-8">
-            {[...NAV_LINKS, NAV_CTA].map((l) => (
-              <li key={l.label}>
-                <Link href={l.href} className={linkClass}>
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-10 md:col-span-7 md:justify-self-end">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-subtle">Solutions</p>
+            <ul className="mt-4 grid gap-3">
+              {SERVICES.map((s) => (
+                <li key={s.slug}>
+                  <Link href={s.href} className={linkClass}>
+                    {s.short}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-subtle">Company</p>
+            <ul className="mt-4 grid gap-3">
+              {[...NAV_LINKS, NAV_CTA].map((l) => (
+                <li key={l.label}>
+                  <Link href={l.href} className={linkClass}>
+                    {l.label === "Solutions" ? "All solutions" : l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </nav>
         <p className="text-sm text-subtle md:col-span-12">
           &copy; <CopyrightYear /> {SITE.name}. All rights reserved.

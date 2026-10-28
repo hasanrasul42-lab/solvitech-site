@@ -32,17 +32,11 @@ export const HOME_CHAPTERS: Chapter[] = [
 export const isLive = (id: ChapterId) => HOME_CHAPTERS.some((c) => c.id === id && c.live);
 
 /**
- * Dedicated pages planned for later tasks. Nothing links to these until they
- * exist: when a page ships, point the relevant config `page` field at it.
+ * Dedicated pages planned for later tasks (the Solutions pages exist: see
+ * src/config/services.ts). Nothing links to these until they exist: when a
+ * page ships, point the relevant config `page` field at it.
  */
 export const PLANNED_PAGES = [
-  "/solutions",
-  "/solutions/ai",
-  "/solutions/automation",
-  "/solutions/custom-software",
-  "/solutions/integrations",
-  "/solutions/websites",
-  "/solutions/digital-growth",
   "/about",
   "/approach",
   "/working-together",
@@ -61,9 +55,9 @@ function chapterLink(label: string, id: ChapterId): SiteLink {
   return { label, href: id === "hero" ? "/" : `/#${id}`, pending: !isLive(id) };
 }
 
-/** Header links: only chapters that are live. */
+/** Header links: real pages and live homepage chapters only. */
 export const NAV_LINKS: SiteLink[] = [
-  chapterLink("Solutions", "solutions"),
+  { label: "Solutions", href: "/solutions", pending: false },
   chapterLink("Our Work", "work"),
   chapterLink("About", "why"),
   chapterLink("Approach", "approach"),

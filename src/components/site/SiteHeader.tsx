@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { NAV_CTA, NAV_LINKS } from "@/config/site";
 import BrandLogo from "./BrandLogo";
 import SiteLinkControl from "./SiteLinkControl";
@@ -16,6 +17,9 @@ const ctaClass =
  * page scrolls. Below lg it collapses into an accessible full-screen menu.
  */
 export default function SiteHeader() {
+  const pathname = usePathname();
+  // A page link is current on its own page and below it; homepage anchors never are.
+  const isCurrent = (href: string) => !href.includes("#") && (pathname === href || pathname.startsWith(`${href}/`));
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -79,7 +83,7 @@ export default function SiteHeader() {
           <ul className="flex items-center gap-1">
             {NAV_LINKS.map((link) => (
               <li key={link.label}>
-                <SiteLinkControl link={link} className={navLinkClass} current={link.href === "/"} />
+                <SiteLinkControl link={link} className={navLinkClass} current={isCurrent(link.href)} />
               </li>
             ))}
           </ul>
@@ -128,7 +132,7 @@ export default function SiteHeader() {
               <li key={link.label} className="border-b border-hairline">
                 <SiteLinkControl
                   link={link}
-                  current={link.href === "/"}
+                  current={isCurrent(link.href)}
                   onNavigate={() => close(false)}
                   className="flex w-full items-center py-4 text-left text-[1.75rem] font-medium tracking-[-0.02em] text-muted transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft aria-[current=page]:text-foreground"
                 />

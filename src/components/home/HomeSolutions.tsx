@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CORE_SERVICES } from "@/config/services";
 import { SOLUTIONS_CLOSING, SOLUTIONS_INTRO, SUPPORTING, SUPPORTING_LABEL } from "@/config/solutions";
 import ConnectedSystem from "./ConnectedSystem";
 
@@ -52,6 +53,28 @@ export default function HomeSolutions() {
           <ConnectedSystem />
         </div>
 
+        {/* Core services: each has a dedicated page. */}
+        <nav aria-label="Core services" className="mt-16 md:mt-20">
+          <ul className="grid border-t border-hairline sm:grid-cols-2 lg:grid-cols-4">
+            {CORE_SERVICES.map((s) => (
+              <li key={s.slug} className="border-b border-hairline sm:[&:nth-child(odd)]:border-r lg:border-r lg:last:border-r-0">
+                <Link
+                  href={s.href}
+                  className="group flex h-full flex-col gap-2 py-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-soft sm:px-6 lg:first:pl-0"
+                >
+                  <span className="text-lg font-semibold tracking-[-0.015em] text-foreground transition-colors group-hover:text-accent-soft">
+                    {s.name}
+                  </span>
+                  <span className="text-[0.9375rem] leading-relaxed text-muted">{s.summary}</span>
+                  <span aria-hidden className="mt-auto pt-2 text-sm text-accent-soft transition-transform group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
         {/* Supporting pathways */}
         <div className="mt-20 md:mt-24">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-subtle">{SUPPORTING_LABEL}</p>
@@ -81,10 +104,15 @@ export default function HomeSolutions() {
           <p className="max-w-[34rem] text-xl leading-snug tracking-[-0.01em] text-foreground md:text-2xl">
             {SOLUTIONS_CLOSING.line}
           </p>
-          <Link href={SOLUTIONS_CLOSING.cta.href} className={`${secondaryCta} shrink-0`}>
-            {SOLUTIONS_CLOSING.cta.label}
-            <span aria-hidden>→</span>
-          </Link>
+          <div className="flex shrink-0 flex-col gap-3 min-[420px]:flex-row">
+            <Link href={SOLUTIONS_CLOSING.hub.href} className={secondaryCta}>
+              {SOLUTIONS_CLOSING.hub.label}
+            </Link>
+            <Link href={SOLUTIONS_CLOSING.cta.href} className={secondaryCta}>
+              {SOLUTIONS_CLOSING.cta.label}
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
