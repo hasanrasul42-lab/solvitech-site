@@ -56,7 +56,7 @@ export default function ServicePage({ slug }: { slug: ServiceSlug }) {
           </div>
           <p className="mt-7 max-w-[44rem] text-[1.0625rem] leading-relaxed text-muted md:text-lg">{s.hero.intro}</p>
           <div className="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
-            <Link href="/#contact" className={primaryBtn}>
+            <Link href="/contact" className={primaryBtn}>
               Discuss your project <span aria-hidden>→</span>
             </Link>
             <Link href="/solutions" className={secondaryBtn}>

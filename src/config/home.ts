@@ -15,8 +15,8 @@ export const WHY = {
   title: "Engineering that starts with how your business works",
   lead:
     "Solvitech is a founder-led engineering practice. We take on a focused number of projects so that each one gets senior attention from first conversation to launch, and the person who scopes your project is the person accountable for delivering it.",
-  /** Future About page. The link appears once the page exists. */
-  aboutPage: undefined as string | undefined,
+  /** Dedicated About page. */
+  aboutPage: "/about" as string | undefined,
   aboutLabel: "More about Solvitech",
 };
 
@@ -59,8 +59,8 @@ export const APPROACH = {
   title: "From first conversation to a system you rely on",
   intro:
     "Every project moves through four stages. Each one ends with something concrete for you to review, and nothing moves forward without your agreement.",
-  /** Future dedicated page. The link appears once the page exists. */
-  page: undefined as string | undefined,
+  /** Dedicated page. */
+  page: "/approach" as string | undefined,
 };
 
 export interface Stage {
@@ -135,8 +135,8 @@ export const WORKING = {
   title: "Clear engagements, agreed before work begins",
   intro:
     "There is no fixed price list, because no two systems are the same. Instead, every engagement is scoped and quoted in writing before work starts, so you know what you are committing to.",
-  /** Future dedicated page. The link appears once the page exists. */
-  page: undefined as string | undefined,
+  /** Dedicated page. */
+  page: "/working-together" as string | undefined,
 };
 
 export interface Engagement {
@@ -214,10 +214,19 @@ export const CONTACT = {
    * validates and prepares the enquiry, then says plainly that it has not
    * been sent.
    *   email    -- opens the visitor's email app with the enquiry filled in
-   *   page     -- future dedicated Contact page (linked once it exists)
+   *   page     -- the dedicated Contact page
    */
   email: undefined as string | undefined,
-  page: undefined as string | undefined,
+  page: "/contact" as string | undefined,
 };
 
-export const ENQUIRY_TOPICS = ["Improve a process", "Automate work", "Connect systems", "Build software", "Use AI", "Website or growth"];
+/** Optional "service interest" choices on the enquiry form. */
+export const ENQUIRY_INTERESTS = [
+  "Custom software or business system",
+  "AI or intelligent application",
+  "Automation",
+  "Connecting systems",
+  "Website or e-commerce",
+  "SEO and digital growth",
+  "Not sure yet",
+];

@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: SITE.url ? new URL(SITE.url) : undefined,
   title: SITE.title,
   description: SITE.description,
   applicationName: SITE.name,

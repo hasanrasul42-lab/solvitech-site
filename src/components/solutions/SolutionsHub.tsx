@@ -30,7 +30,7 @@ export default function SolutionsHub() {
             <a href="#finder" className={primaryBtn}>
               Find where to start <span aria-hidden>↓</span>
             </a>
-            <Link href="/#contact" className={secondaryBtn}>
+            <Link href="/contact" className={secondaryBtn}>
               Discuss a project
             </Link>
           </div>

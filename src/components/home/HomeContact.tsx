@@ -37,7 +37,7 @@ export default function HomeContact() {
           </ul>
           {CONTACT.page && (
             <Link href={CONTACT.page} className={`mt-8 ${textLink}`}>
-              Other ways to get in touch
+              Open the Start a Project page
               <span aria-hidden>→</span>
             </Link>
           )}

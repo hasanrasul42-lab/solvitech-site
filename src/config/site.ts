@@ -3,9 +3,9 @@ import { WORK_VISIBLE } from "./work";
 /**
  * Site structure and navigation.
  *
- * The homepage is seven chapters, in this order. Each renders as a <section>
- * whose id matches its chapter id, so navigation resolves to in-page anchors
- * until dedicated pages exist (see PLANNED_PAGES).
+ * The homepage is seven chapters, in this order (Master Blueprint V1.4). Each
+ * renders as a <section> whose id matches its chapter id. Navigation points at
+ * the dedicated pages; the homepage chapters link to them as well.
  *
  * Selected Work is only shown -- and only linked -- once approved real
  * projects exist (src/config/work.ts).
@@ -31,17 +31,8 @@ export const HOME_CHAPTERS: Chapter[] = [
 
 export const isLive = (id: ChapterId) => HOME_CHAPTERS.some((c) => c.id === id && c.live);
 
-/**
- * Dedicated pages planned for later tasks (the Solutions pages exist: see
- * src/config/services.ts). Nothing links to these until they exist: when a
- * page ships, point the relevant config `page` field at it.
- */
-export const PLANNED_PAGES = [
-  "/about",
-  "/approach",
-  "/working-together",
-  "/contact",
-] as const;
+/** Public pages, for the sitemap. Selected Work is added once it exists. */
+export const PUBLIC_ROUTES = ["/", "/solutions", "/about", "/approach", "/working-together", "/contact"] as const;
 
 export interface SiteLink {
   label: string;
@@ -55,25 +46,37 @@ function chapterLink(label: string, id: ChapterId): SiteLink {
   return { label, href: id === "hero" ? "/" : `/#${id}`, pending: !isLive(id) };
 }
 
-/** Header links: real pages and live homepage chapters only. */
+const page = (label: string, href: string): SiteLink => ({ label, href, pending: false });
+
+/**
+ * Header links (Blueprint V1.4 order: Solutions, Work when publishable,
+ * Approach, About; plus Working Together). Only real destinations.
+ */
 export const NAV_LINKS: SiteLink[] = [
-  { label: "Solutions", href: "/solutions", pending: false },
+  page("Solutions", "/solutions"),
   chapterLink("Our Work", "work"),
-  chapterLink("About", "why"),
-  chapterLink("Approach", "approach"),
-  chapterLink("Working Together", "working-together"),
+  page("Our Approach", "/approach"),
+  page("About", "/about"),
+  page("Working Together", "/working-together"),
 ].filter((l) => !l.pending);
 
-/** Header call to action (styled as a button, separate from the text links). */
-export const NAV_CTA: SiteLink = chapterLink("Start a Project", "contact");
+/** Site-wide call to action: the dedicated Contact page. */
+export const NAV_CTA: SiteLink = page("Start a Project", "/contact");
 
+/** Hero: Explore Solutions (primary, in-page) and Discuss a Project (Blueprint V1.4). */
 export const HERO_CTAS = {
   primary: chapterLink("Explore solutions", "solutions"),
-  secondary: chapterLink("Discuss a project", "contact"),
+  secondary: page("Discuss a project", "/contact"),
 };
 
 export const SITE = {
   name: "Solvitech",
+  /**
+   * Canonical origin for the sitemap, robots and metadata. Unset until the
+   * production domain is confirmed (NEXT_PUBLIC_SITE_URL); while unset, robots
+   * asks search engines not to index.
+   */
+  url: process.env.NEXT_PUBLIC_SITE_URL as string | undefined,
   title: "Solvitech | Engineering better business",
   description:
     "Solvitech designs and builds bespoke software, AI agents, business automation and integrations, plus websites and digital growth, so businesses work better.",

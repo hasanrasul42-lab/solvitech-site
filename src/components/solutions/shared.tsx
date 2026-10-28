@@ -7,8 +7,8 @@ export const secondaryBtn =
   "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-6 text-[0.9375rem] font-medium text-foreground transition-colors hover:border-white/35 hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft";
 
 /**
- * Closing call to action for Solutions pages. Enquiries go to the homepage
- * contact chapter (the only enquiry destination until a Contact page exists).
+ * Closing call to action for inner pages. Enquiries go to the dedicated
+ * Contact page.
  */
 export function PageCta({ title, body }: { title: string; body: string }) {
   return (
@@ -24,7 +24,7 @@ export function PageCta({ title, body }: { title: string; body: string }) {
           </h2>
           <p className="mt-4 text-[1.0625rem] leading-relaxed text-muted md:text-lg">{body}</p>
         </div>
-        <Link href="/#contact" className={`${primaryBtn} shrink-0 self-start md:self-auto`}>
+        <Link href="/contact" className={`${primaryBtn} shrink-0 self-start md:self-auto`}>
           Start a conversation <span aria-hidden>→</span>
         </Link>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, type FormEvent } from "react";
-import { CONTACT, ENQUIRY_TOPICS } from "@/config/home";
+import { CONTACT, ENQUIRY_INTERESTS } from "@/config/home";
 
 type Field = "name" | "email" | "message";
 type Errors = Partial<Record<Field, string>>;
@@ -9,7 +9,9 @@ type Errors = Partial<Record<Field, string>>;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Enquiry form. Delivery depends on configuration (src/config/home.ts):
+ * Enquiry form: name, reply email, optional service interest and a short
+ * message (Master Blueprint V1.4: keep the first step short). Used on the
+ * homepage and /contact. Delivery depends on configuration (src/config/home.ts):
  *   CONTACT.email set -> opens the visitor's email app with the enquiry
  *                        filled in, ready for them to send;
  *   nothing set       -> preview only: the enquiry is checked and prepared,
@@ -42,20 +44,18 @@ export default function ContactForm() {
       return;
     }
 
-    const topics = data.getAll("topics").map(String);
     const body = [
       value("message"),
       "",
-      topics.length ? `Areas: ${topics.join(", ")}` : null,
+      value("interest") ? `Interested in: ${value("interest")}` : null,
       `Name: ${value("name")}`,
-      value("company") ? `Company: ${value("company")}` : null,
-      `Email: ${value("email")}`,
+      `Reply to: ${value("email")}`,
     ]
       .filter((l) => l !== null)
       .join("\n");
 
     if (delivery === "email") {
-      const subject = `Project enquiry from ${value("name")}${value("company") ? `, ${value("company")}` : ""}`;
+      const subject = `Project enquiry from ${value("name")}`;
       window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     }
     setPrepared(body);
@@ -89,8 +89,8 @@ export default function ContactForm() {
         <>
           <p className="text-xl font-semibold tracking-[-0.015em] text-foreground">Not sent: online enquiries aren&rsquo;t connected yet</p>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
-            This is a preview of the website, so your enquiry has not been sent or stored anywhere. Copy it below if
-            you would like to keep it.
+            This is a preview of the website, so your enquiry has not been sent or stored anywhere. You can copy the
+            text below to keep it; copying does not send it.
           </p>
         </>
       )}
@@ -99,7 +99,7 @@ export default function ContactForm() {
       </pre>
       <div className="mt-5 flex flex-wrap gap-3">
         <button type="button" onClick={copy} className={secondaryBtn}>
-          {copied ? "Copied" : "Copy enquiry"}
+          {copied ? "Copied (not sent)" : "Copy text (does not send)"}
         </button>
         <button
           type="button"
@@ -113,7 +113,7 @@ export default function ContactForm() {
         </button>
       </div>
       <p className="sr-only" aria-live="polite">
-        {copied ? "Enquiry copied to the clipboard." : ""}
+        {copied ? "Enquiry text copied to the clipboard. It has not been sent." : ""}
       </p>
     </div>
   );
@@ -124,25 +124,27 @@ export default function ContactForm() {
       <form ref={formRef} hidden={!!prepared} noValidate onSubmit={submit} className="grid gap-5" aria-describedby={delivery === "preview" ? id("notice") : undefined}>
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField id={id("name")} name="name" label="Your name" autoComplete="name" error={errors.name} />
-          <TextField id={id("company")} name="company" label="Company" optional autoComplete="organization" />
+          <TextField id={id("email")} name="email" type="email" label="Reply email" autoComplete="email" error={errors.email} />
         </div>
-        <TextField id={id("email")} name="email" type="email" label="Email address" autoComplete="email" error={errors.email} />
 
-        <fieldset>
-          <legend className="text-sm font-medium text-foreground">
+        <div>
+          <label htmlFor={id("interest")} className="text-sm font-medium text-foreground">
             What is it about? <span className="font-normal text-subtle">(optional)</span>
-          </legend>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {ENQUIRY_TOPICS.map((t) => (
-              <label key={t} className="cursor-pointer">
-                <input type="checkbox" name="topics" value={t} className="peer sr-only" />
-                <span className="inline-flex items-center rounded-full border border-white/12 px-3.5 py-2 text-sm text-muted transition-colors hover:border-white/30 hover:text-foreground peer-checked:border-accent/70 peer-checked:bg-accent/15 peer-checked:text-foreground peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent-soft">
+          </label>
+          <div className="relative mt-2">
+            <select id={id("interest")} name="interest" defaultValue="" className={`${inputClass} appearance-none pr-11`}>
+              <option value="">Choose a service, if you know</option>
+              {ENQUIRY_INTERESTS.map((t) => (
+                <option key={t} value={t}>
                   {t}
-                </span>
-              </label>
-            ))}
+                </option>
+              ))}
+            </select>
+            <svg aria-hidden viewBox="0 0 16 16" className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
-        </fieldset>
+        </div>
 
         <div>
           <label htmlFor={id("message")} className="text-sm font-medium text-foreground">
