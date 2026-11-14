@@ -191,6 +191,13 @@ export interface InteractiveMarkProps {
    * performance.now() time (or from the 3D takeover, whichever is later).
    */
   interactiveFrom?: number;
+  /**
+   * Returns the performance.now() time before which the 3D scene must not
+   * mount (0 = no wait); the poster covers until then. Read on the client
+   * after hydration. Keeps the scene's start-up work (setup, shader
+   * compilation, first draw) out of an entrance choreographed outside the mark.
+   */
+  sceneFrom?: () => number;
   /** Lab only: report the 3D as ready no earlier than this performance.now() time. */
   debugReadyAt?: number;
   /** Lab only: behave as if WebGL were unavailable. */
@@ -238,6 +245,7 @@ export default function InteractiveMark({
   captureQ,
   restStart = false,
   interactiveFrom = 0,
+  sceneFrom,
   debugReadyAt = 0,
   debugNoWebGL = false,
   overlay,
@@ -252,6 +260,14 @@ export default function InteractiveMark({
   const detectedWebGL = useWebGLSupport();
   const hasWebGL = debugNoWebGL ? false : detectedWebGL;
   const InteractiveScene = useSceneModule()?.default;
+  const [sceneDue, setSceneDue] = useState(!sceneFrom);
+  const sceneFromRef = useRef(sceneFrom);
+  useEffect(() => {
+    if (sceneDue) return;
+    const at = sceneFromRef.current?.() ?? 0;
+    const timer = setTimeout(() => setSceneDue(true), Math.max(0, at - performance.now()));
+    return () => clearTimeout(timer);
+  }, [sceneDue]);
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const coarsePointer = useMediaQuery("(pointer: coarse)");
   const smallScreen = useMediaQuery("(max-width: 640px)");
@@ -591,7 +607,7 @@ export default function InteractiveMark({
               transition: capture || reducedMotion ? undefined : `opacity ${ENTRANCE.handoverMs}ms linear`,
             }}
           >
-            {InteractiveScene && (
+            {InteractiveScene && sceneDue && (
               <InteractiveScene
                 input={inputRef as RefObject<InteractionInput>}
                 registerWake={registerWake}

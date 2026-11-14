@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, type RefObject } from "react";
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
@@ -602,6 +602,37 @@ function Studio({ lowPower }: { lowPower: boolean }) {
   );
 }
 
+/**
+ * Compiles the scene's shaders in the background (KHR_parallel_shader_compile
+ * where the GPU supports it) before the first frame, so the driver's compile
+ * step does not block the page. Rendering is held until it finishes; the
+ * poster covers the mark until the scene reports ready, so nothing changes
+ * visually.
+ */
+function Precompile() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  const setFrameloop = useThree((s) => s.setFrameloop);
+  const invalidate = useThree((s) => s.invalidate);
+  useLayoutEffect(() => {
+    let live = true;
+    setFrameloop("never");
+    gl.compileAsync(scene, camera)
+      .catch(() => {})
+      .finally(() => {
+        if (!live) return;
+        setFrameloop("demand");
+        invalidate();
+      });
+    return () => {
+      live = false;
+      setFrameloop("demand");
+    };
+  }, [gl, scene, camera, setFrameloop, invalidate]);
+  return null;
+}
+
 export default function InteractiveScene(props: InteractiveSceneProps) {
   const contours = useLoadedMarkContours();
   if (!contours) return null;
@@ -619,6 +650,7 @@ export default function InteractiveScene(props: InteractiveSceneProps) {
       <Suspense fallback={null}>
         <CameraFit contours={contours} />
         <Sculpture {...props} contours={contours} />
+        <Precompile />
       </Suspense>
     </Canvas>
   );

@@ -50,12 +50,15 @@ export interface Intro3dRecord {
 /**
  * Offsets that put the mark's stage centre (= the mark's centre) at the
  * viewport centre. Measured on the untransformed stage, so call it while
- * html[data-intro] is not "play".
+ * html[data-intro] is not "play". Written on <html> (the stage inherits the
+ * custom properties) so the pre-hydration script never edits React-owned
+ * elements; <html> opts out of hydration attribute checks in the layout.
  */
 export function placeIntroStage(stage: HTMLElement) {
   const r = stage.getBoundingClientRect();
-  stage.style.setProperty("--intro-dx", `${window.innerWidth / 2 - (r.left + r.width / 2)}px`);
-  stage.style.setProperty("--intro-dy", `${window.innerHeight / 2 - (r.top + r.height / 2)}px`);
+  const root = document.documentElement.style;
+  root.setProperty("--intro-dx", `${window.innerWidth / 2 - (r.left + r.width / 2)}px`);
+  root.setProperty("--intro-dy", `${window.innerHeight / 2 - (r.top + r.height / 2)}px`);
 }
 
 export const STAGE_SELECTOR = "#hero [data-entrance]";

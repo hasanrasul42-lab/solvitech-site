@@ -35,6 +35,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
+      // The System Activation boot script sets data-intro* attributes and
+      // position variables on <html> before React hydrates.
+      suppressHydrationWarning
       lang="en-GB"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

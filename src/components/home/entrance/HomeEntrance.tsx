@@ -10,6 +10,8 @@ const noopSubscribe = () => () => {};
 const readBootStart = () => Number(document.documentElement.getAttribute("data-intro-start") ?? 0);
 
 const html = () => document.documentElement;
+/** End of the intro if it is playing, else 0 (read on the client). */
+const sceneAfterIntro = () => (html().getAttribute("data-intro") === "play" ? readBootStart() + INTRO.endMs : 0);
 
 /**
  * The activation light: the official silhouette (solvitech-mark.svg) masks a
@@ -67,10 +69,12 @@ export default function HomeEntrance() {
   }, [start, finish]);
 
   // Record how soon the 3D took over, to decide whether the next visit needs
-  // the intro at all.
+  // the intro at all. When the intro played, the scene was held back until it
+  // ended (sceneFrom), so only the time it needed after that counts.
   useEffect(() => {
     const stage = document.querySelector(STAGE_SELECTOR);
     if (!stage) return;
+    const heldUntil = sceneAfterIntro();
     const save = (readyMs: number | null) => {
       const record: Intro3dRecord = { readyMs, at: Date.now() };
       try {
@@ -79,7 +83,7 @@ export default function HomeEntrance() {
     };
     const check = () => {
       const state = stage.getAttribute("data-entrance");
-      if (state === "complete") save(performance.now());
+      if (state === "complete") save(heldUntil ? Math.max(0, performance.now() - heldUntil) : performance.now());
       else if (state === "fallback" && !stage.querySelector("canvas")) save(null);
       else return false;
       return true;
@@ -94,6 +98,8 @@ export default function HomeEntrance() {
   useEffect(
     () => () => {
       for (const name of ["data-intro", "data-intro-start", "data-intro-reason"]) html().removeAttribute(name);
+      html().style.removeProperty("--intro-dx");
+      html().style.removeProperty("--intro-dy");
     },
     [],
   );
@@ -106,6 +112,9 @@ export default function HomeEntrance() {
           // Cursor response blends in once the activation light has passed, so
           // the sweep always sits exactly on the resting silhouette.
           interactiveFrom: start + INTRO.sweepDelayMs + INTRO.sweepMs,
+          // While the intro plays the poster carries it; the 3D scene starts
+          // up afterwards so its set-up work cannot stall the intro.
+          sceneFrom: sceneAfterIntro,
           overlay: <ActivationSweep />,
           lighting: "refined",
         }}
