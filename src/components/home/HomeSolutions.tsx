@@ -32,7 +32,7 @@ export default function HomeSolutions() {
       <div className={`mx-auto w-full max-w-[1440px] pb-20 pt-20 md:pb-28 md:pt-24 lg:pb-32 lg:pt-24 ${gutter}`}>
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">
-            <p className="flex items-center gap-3 text-[0.625rem] font-medium uppercase tracking-[0.14em] text-subtle min-[400px]:text-[0.6875rem] sm:text-xs sm:tracking-[0.22em]">
+            <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-subtle sm:tracking-[0.22em]">
               <span aria-hidden className="h-px w-6 bg-accent" />
               {SOLUTIONS_INTRO.eyebrow}
             </p>

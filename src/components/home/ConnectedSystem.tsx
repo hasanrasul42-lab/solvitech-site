@@ -556,7 +556,7 @@ function Pane({
               </span>
             </span>
             <span
-              className={`ml-auto rounded-full px-2 py-0.5 text-[11.5px] transition-colors duration-500 ${
+              className={`ml-auto rounded-full px-2 py-0.5 text-[12px] transition-colors duration-500 ${
                 updated ? "bg-accent/25 text-[#cfe0ff]" : "bg-white/[0.06] text-muted"
               }`}
             >

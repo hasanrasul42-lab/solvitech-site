@@ -69,6 +69,17 @@ export const HERO_CTAS = {
   secondary: page("Discuss a project", "/contact"),
 };
 
+/**
+ * The social share image (src/app/opengraph-image.png). A page that sets its
+ * own openGraph block replaces the inherited one, so it lists this again.
+ */
+export const SHARE_IMAGE = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Solvitech: Engineering better business. Bespoke software, AI, automation and integrations.",
+};
+
 export const SITE = {
   name: "Solvitech",
   /**

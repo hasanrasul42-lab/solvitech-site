@@ -8,6 +8,10 @@ import HomeWork from "@/components/home/HomeWork";
 import HomeWorkingTogether from "@/components/home/HomeWorkingTogether";
 import SiteFooter from "@/components/site/SiteFooter";
 import SiteHeader from "@/components/site/SiteHeader";
+import { SITE } from "@/config/site";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = SITE.url ? { alternates: { canonical: "/" } } : {};
 
 /**
  * Homepage: seven chapters in the order of HOME_CHAPTERS (src/config/site.ts).

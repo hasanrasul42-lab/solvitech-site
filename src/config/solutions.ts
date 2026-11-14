@@ -24,7 +24,7 @@ export interface Capability {
   id: CapabilityId;
   name: string;
   line: string;
-  /** The service area it stands for (also helps visitors scanning for it). */
+  /** The official service(s) this walkthrough step demonstrates. */
   covers: string;
   /** Future dedicated page, e.g. "/solutions/automation". */
   page?: string;
@@ -35,19 +35,19 @@ export const CAPABILITIES: Capability[] = [
     id: "build",
     name: "Build",
     line: "Software and systems designed for how a business operates.",
-    covers: "Bespoke software & business systems",
+    covers: "Custom Software & Business Systems",
   },
   {
     id: "automate",
     name: "Automate",
     line: "AI agents and workflows that take on repetitive, manual work.",
-    covers: "AI agents & process automation",
+    covers: "AI & Intelligent Applications · Business Process Automation",
   },
   {
     id: "connect",
     name: "Connect",
     line: "Integrations that allow tools and information to work together.",
-    covers: "Integrations & connected data",
+    covers: "Systems Integration",
   },
 ];
 
@@ -101,6 +101,6 @@ export const SUPPORTING: Pathway[] = [
 export const SOLUTIONS_CLOSING = {
   line: "Not sure which of these you need? Start with the problem.",
   /** The homepage contact chapter (or the Contact page once it exists). */
-  cta: { label: "Describe your project", href: "/#contact" },
-  hub: { label: "Explore all solutions", href: "/solutions" },
+  cta: { label: "Start a Project", href: "/#contact" },
+  hub: { label: "Explore Solutions", href: "/solutions" },
 };

@@ -31,7 +31,7 @@ export default function SolutionsHub() {
               Find where to start <span aria-hidden>↓</span>
             </a>
             <Link href="/contact" className={secondaryBtn}>
-              Discuss a project
+              Start a Project
             </Link>
           </div>
         </div>
@@ -86,9 +86,9 @@ export default function SolutionsHub() {
                     href={s.href}
                     className="group flex flex-col gap-2 rounded-2xl border border-white/[0.08] px-5 py-4 transition-colors hover:border-accent/50 hover:bg-white/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft sm:flex-row sm:items-center sm:justify-between sm:gap-6"
                   >
-                    <span className="text-base leading-relaxed text-foreground">&ldquo;{it.problem}&rdquo;</span>
+                    <span className="text-base leading-relaxed text-foreground">{it.problem}</span>
                     <span className="shrink-0 text-sm font-medium text-accent-soft">
-                      {s.short} <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
+                      {s.name} <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
                     </span>
                   </Link>
                 </li>
@@ -115,7 +115,7 @@ export default function SolutionsHub() {
                   </span>
                   <span className="flex flex-col gap-1 rounded-xl border border-white/[0.08] bg-[#0d1424] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                     <span className="text-[0.9375rem] text-foreground">{c.step}</span>
-                    <span className="shrink-0 text-xs font-medium uppercase tracking-[0.12em] text-accent-soft">{getService(c.slug).short}</span>
+                    <span className="shrink-0 text-sm font-medium text-accent-soft">{getService(c.slug).name}</span>
                   </span>
                 </li>
               ))}
@@ -144,7 +144,7 @@ export default function SolutionsHub() {
                 <span className="text-[1.5rem] font-semibold tracking-[-0.025em] text-foreground md:text-[1.75rem]">{s.name}</span>
                 <span className="mt-3 text-base leading-relaxed text-muted">{s.summary}</span>
                 <span className="mt-auto pt-6 text-sm font-medium text-accent-soft">
-                  Explore {s.short.toLowerCase()} <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
+                  Explore {s.name} <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
                 </span>
               </Link>
             </li>

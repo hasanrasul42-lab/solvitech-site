@@ -16,10 +16,10 @@ export default function WorkingTogetherPage() {
     <>
       <PageHero eyebrow={W.eyebrow} headline={W.headline} intro={W.intro}>
         <Link href="/contact" className={primaryBtn}>
-          Discuss a project <span aria-hidden>→</span>
+          Start a Project <span aria-hidden>→</span>
         </Link>
         <Link href="/approach" className={secondaryBtn}>
-          How projects run
+          View Our Approach
         </Link>
       </PageHero>
 
@@ -54,7 +54,7 @@ export default function WorkingTogetherPage() {
                   const s = getService(slug);
                   return (
                     <Link key={slug} href={s.href} className="font-medium text-accent-soft hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft">
-                      {s.short} <span aria-hidden>→</span>
+                      {s.name} <span aria-hidden>→</span>
                     </Link>
                   );
                 })}

@@ -17,10 +17,10 @@ export default function AboutPage() {
     <>
       <PageHero eyebrow={ABOUT.eyebrow} headline={ABOUT.headline} intro={ABOUT.intro}>
         <Link href="/solutions" className={primaryBtn}>
-          Explore our solutions <span aria-hidden>→</span>
+          Explore Solutions <span aria-hidden>→</span>
         </Link>
         <Link href="/contact" className={secondaryBtn}>
-          Start a project
+          Start a Project
         </Link>
       </PageHero>
 

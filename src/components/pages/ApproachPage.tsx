@@ -20,7 +20,7 @@ export default function ApproachPage() {
           Walk through the stages <span aria-hidden>↓</span>
         </a>
         <Link href="/working-together" className={secondaryBtn}>
-          How engagements work
+          How We Work Together
         </Link>
       </PageHero>
 

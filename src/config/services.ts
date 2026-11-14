@@ -5,8 +5,10 @@
  * guarantees. Every example below is an illustrative scenario (labelled as
  * such on the page), not a description of a delivered project.
  *
- * Each service has one `feature` block that differs by type, so the pages
- * share a structure without being the same page with different words.
+ * Pages share building blocks but not a fixed template: each service has its
+ * own focus block (how that kind of work actually happens), its own feature
+ * block, its own section titles and its own section order (`order`). The
+ * general delivery process lives on /approach and is linked, not repeated.
  */
 
 export type ServiceSlug = "custom-software" | "ai" | "automation" | "integrations" | "websites" | "digital-growth";
@@ -29,133 +31,55 @@ export type Feature =
   | { kind: "checklist"; title: string; intro: string; items: TextItem[] }
   | { kind: "principles"; title: string; intro: string; items: TextItem[] };
 
+/** A service-specific explanation of how the work happens. */
+export interface Focus {
+  title: string;
+  intro: string;
+  /** path: a numbered sequence; ladder: levels that build on each other; columns: parallel concerns. */
+  style: "path" | "ladder" | "columns";
+  items: TextItem[];
+}
+
+export type SectionKey = "focus" | "builds" | "feature" | "examples" | "limits";
+
 export interface Service {
   slug: ServiceSlug;
   href: `/solutions/${ServiceSlug}`;
   tier: "core" | "supporting";
-  /** Full name, used in headings and page titles. */
+  /** The one name used everywhere: headings, navigation, footer, forms, links. */
   name: string;
-  /** Short label for navigation and cross-links. */
-  short: string;
   meta: { title: string; description: string };
   /** One-line summary for the hub and cross-links. */
   summary: string;
   hero: { headline: string; intro: string };
   /** What the service actually involves. */
   involves: { title: string; paragraphs: string[] };
-  /** Recognisable business problems, in the visitor's words. */
+  /** Recognisable signs of the problem (illustrative; never presented as quotes). */
+  problemsTitle: string;
   problems: string[];
   /** What Solvitech can design or engineer. */
+  buildsTitle: string;
   builds: TextItem[];
+  examplesTitle: string;
   examples: Example[];
+  focus: Focus;
   feature: Feature;
-  /** What a typical engagement looks like for this service. */
-  engagement: { steps: TextItem[]; note: string };
+  /** Section order below the overview; varies by service. */
+  order: SectionKey[];
+  /** Service-specific note on how projects of this kind run (links to /approach). */
+  approachNote: string;
   considerations: TextItem[];
   related: { slug: ServiceSlug; why: string }[];
   cta: { title: string; body: string };
 }
 
 export const SERVICES: Service[] = [
-  // --- Core ---------------------------------------------------------------------
-  {
-    slug: "custom-software",
-    href: "/solutions/custom-software",
-    tier: "core",
-    name: "Custom Software & Business Systems",
-    short: "Custom Software",
-    meta: {
-      title: "Custom Software & Business Systems",
-      description:
-        "Bespoke business software built around how you operate: portals, operational platforms, job management, scheduling, dashboards and internal tools.",
-    },
-    summary: "Portals, operational platforms and internal tools designed around how your business actually runs.",
-    hero: {
-      headline: "Software shaped around the way you work",
-      intro:
-        "When spreadsheets, shared inboxes and off-the-shelf tools no longer fit how your business runs, a purpose-built system can. We design and engineer business software around your real workflows, so your team works in one place instead of around the gaps.",
-    },
-    involves: {
-      title: "What custom software involves",
-      paragraphs: [
-        "Custom software is built for a specific organisation and the way it operates. That might be an internal platform your team uses all day, a portal for customers or suppliers, or a focused tool that replaces a fragile spreadsheet.",
-        "The work is as much about understanding the process as writing code: who does what, what information they need, where the exceptions are and what has to be recorded. The software then reflects those rules, rather than forcing your team to adapt to a generic product.",
-      ],
-    },
-    problems: [
-      "Our operation runs on spreadsheets that only one or two people fully understand.",
-      "We pay for several tools and still re-type the same information between them.",
-      "Off-the-shelf software covers 70% of what we need, and the rest is workarounds.",
-      "Customers keep emailing to ask for updates we could show them directly.",
-      "Managers can't see the state of jobs, orders or cases without asking around.",
-    ],
-    builds: [
-      { title: "Operational platforms", body: "The central system for jobs, orders, cases or projects: statuses, assignments, history and the rules that move work along." },
-      { title: "Scheduling & job management", body: "Bookings, rotas, capacity and dispatch, with the constraints that matter in your business built in." },
-      { title: "Customer & supplier portals", body: "Secure areas where outside users submit requests, upload documents, track progress and see their own records." },
-      { title: "Dashboards & reporting", body: "Live views of the numbers people actually make decisions on, drawn from the system rather than compiled by hand." },
-      { title: "Internal tools", body: "Focused applications that replace a spreadsheet, a paper form or a manual check with something reliable and auditable." },
-      { title: "Extending existing systems", body: "New modules, interfaces or data models added alongside software you already run, where replacing it would be wasteful." },
-    ],
-    examples: [
-      {
-        title: "A field-service job board",
-        situation: "A maintenance company tracks jobs in a spreadsheet and coordinates engineers by phone and WhatsApp.",
-        approach:
-          "A job-management system with a scheduling board, engineer assignments, mobile job sheets with photos and sign-off, and automatic customer updates when a visit is booked or completed.",
-      },
-      {
-        title: "A supplier onboarding portal",
-        situation: "A distributor collects supplier documents and certificates by email and loses track of renewals.",
-        approach:
-          "A portal where suppliers upload and update their documents, with expiry tracking, internal review steps and reminders before anything lapses.",
-      },
-      {
-        title: "An operations dashboard",
-        situation: "Directors receive a weekly report that takes half a day to assemble and is out of date when it arrives.",
-        approach: "A live dashboard fed from the operational systems, with drill-down to the underlying records and agreed definitions for each figure.",
-      },
-    ],
-    feature: {
-      kind: "comparison",
-      title: "Off-the-shelf or bespoke?",
-      intro: "Bespoke is not always the right answer. We will recommend an existing product when it genuinely fits.",
-      columns: ["Off-the-shelf software", "Custom software"],
-      rows: [
-        { label: "Fit", a: "Built for the average business in a category", b: "Built around your workflows and rules" },
-        { label: "Start-up time", a: "Fast to start using", b: "Takes time to design and build" },
-        { label: "Cost profile", a: "Ongoing per-user subscriptions", b: "Upfront build, then hosting and support" },
-        { label: "Change", a: "Depends on the vendor's roadmap", b: "Changes when your business needs them" },
-        { label: "Best when", a: "Your process is standard", b: "Your process is how you compete" },
-      ],
-    },
-    engagement: {
-      steps: [
-        { title: "Discovery", body: "Mapping the process, users and data, and deciding what the first version must do." },
-        { title: "Design", body: "Screens, data model and permissions agreed before building, with the scope written down." },
-        { title: "Build in milestones", body: "Working software released in stages for you to test with real users." },
-        { title: "Launch & support", body: "Data migration, training, go-live and an agreed arrangement for support and improvements." },
-      ],
-      note: "Most systems start with a focused first version that replaces the most painful part of the process, then grow from there.",
-    },
-    considerations: [
-      { title: "Ownership and running costs", body: "Custom software needs hosting, maintenance and occasional updates. Ownership of the code and data is agreed during scoping." },
-      { title: "Time from your team", body: "The people who do the work need to be involved in design and testing. Their input is what makes the system fit." },
-      { title: "Data migration", body: "Moving existing records across is often underestimated. It is planned and tested as part of the project, not left to the end." },
-    ],
-    related: [
-      { slug: "integrations", why: "Connect the new system to the tools you keep, such as accounting or CRM." },
-      { slug: "automation", why: "Remove the routine steps once the process lives in one place." },
-      { slug: "ai", why: "Add document reading, search or assistance inside the system." },
-    ],
-    cta: { title: "Have a process that has outgrown its tools?", body: "Tell us how the work happens today and where it breaks down." },
-  },
+  // --- Core ----------------------------------------------------------------------
   {
     slug: "ai",
     href: "/solutions/ai",
     tier: "core",
     name: "AI & Intelligent Applications",
-    short: "AI",
     meta: {
       title: "AI & Intelligent Applications",
       description:
@@ -174,6 +98,7 @@ export const SERVICES: Service[] = [
         "Building these well means choosing the right model and approach, connecting it to the right information, deciding what the AI may do on its own and what needs a person, and testing it against real examples before anyone relies on it.",
       ],
     },
+    problemsTitle: "Where AI could help",
     problems: [
       "Staff spend hours reading documents to copy a handful of details into another system.",
       "The answer is somewhere in our files, policies or past emails, but finding it takes too long.",
@@ -181,6 +106,7 @@ export const SERVICES: Service[] = [
       "We tried a general AI tool, but it doesn't know our business and we're unsure what happens to our data.",
       "We want to use AI but don't know which tasks it is actually reliable enough for.",
     ],
+    buildsTitle: "AI applications we build",
     builds: [
       { title: "AI assistants", body: "Assistants for your team or customers that answer from your approved information and hand over to a person when they should." },
       { title: "Document understanding", body: "Reading invoices, forms, contracts or reports and extracting structured data, with confidence checks and review queues." },
@@ -189,6 +115,7 @@ export const SERVICES: Service[] = [
       { title: "Decision support", body: "Classifying, prioritising and flagging items for attention, so people spend their time where judgement is needed." },
       { title: "AI inside existing software", body: "Adding these capabilities to systems you already use, rather than creating another separate tool." },
     ],
+    examplesTitle: "Where AI can earn its place",
     examples: [
       {
         title: "Invoice and delivery-note processing",
@@ -209,6 +136,18 @@ export const SERVICES: Service[] = [
           "Each message is categorised, key details are extracted, and it is routed to the right queue with a suggested reply drafted for a person to approve.",
       },
     ],
+    focus: {
+      title: "Introducing AI safely",
+      style: "path",
+      intro: "AI is proven on your own material before anyone relies on it, then built in with controls and monitored.",
+      items: [
+        { title: "Identify the task", body: "Pinpoint the specific, repeated task where AI could help, and what a good result looks like." },
+        { title: "Prove it on your data", body: "A small, contained trial against real examples to measure how reliable the approach is." },
+        { title: "Build it into the process", body: "Integrate the working approach into your systems, with review steps, logging and controls." },
+        { title: "Monitor and refine", body: "Track accuracy and usage after launch, and adjust prompts, data or rules as you learn." },
+      ],
+    },
+    order: ["builds", "feature", "focus", "examples", "limits"],
     feature: {
       kind: "principles",
       title: "Oversight, accuracy and data protection",
@@ -220,15 +159,7 @@ export const SERVICES: Service[] = [
         { title: "Your data is handled deliberately", body: "We choose providers and settings with data protection in mind, limit what is sent to AI services, and document where data goes." },
       ],
     },
-    engagement: {
-      steps: [
-        { title: "Identify the task", body: "Pinpoint the specific, repeated task where AI could help, and what a good result looks like." },
-        { title: "Prove it on your data", body: "A small, contained trial against real examples to measure how reliable the approach is." },
-        { title: "Build it into the process", body: "Integrate the working approach into your systems, with review steps, logging and controls." },
-        { title: "Monitor and refine", body: "Track accuracy and usage after launch, and adjust prompts, data or rules as you learn." },
-      ],
-      note: "A short proof stage before full development means you see how well AI handles your material before committing to a larger build.",
-    },
+    approachNote: "A short proof stage before full development means you see how well AI handles your material before committing to a larger build.",
     considerations: [
       { title: "Accuracy is never 100%", body: "AI makes mistakes, sometimes confidently. Processes are designed so that errors are caught before they matter." },
       { title: "Ongoing usage costs", body: "AI services are usually charged by use. Expected running costs are estimated during scoping and monitored after launch." },
@@ -247,7 +178,6 @@ export const SERVICES: Service[] = [
     href: "/solutions/automation",
     tier: "core",
     name: "Business Process Automation",
-    short: "Automation",
     meta: {
       title: "Business Process Automation",
       description:
@@ -266,6 +196,7 @@ export const SERVICES: Service[] = [
         "The important design work is in the edges. What happens when information is missing, an approval is overdue or a system is unavailable? Good automation handles the normal case quietly and raises the unusual ones clearly.",
       ],
     },
+    problemsTitle: "Signs a process is ready to automate",
     problems: [
       "We copy the same details from one system into another every day.",
       "Approvals stall because nobody knows they are waiting.",
@@ -273,6 +204,7 @@ export const SERVICES: Service[] = [
       "Month-end reports are assembled manually from several sources.",
       "Things slip through the cracks when the person who usually handles them is away.",
     ],
+    buildsTitle: "What we automate",
     builds: [
       { title: "Workflow automation", body: "Multi-step processes that move work from one stage to the next, with the right people and systems involved." },
       { title: "Approvals & reminders", body: "Requests routed to the right approver, with reminders and escalation when they are not dealt with in time." },
@@ -281,6 +213,7 @@ export const SERVICES: Service[] = [
       { title: "Exception handling", body: "Clear queues and alerts for the cases automation cannot resolve, with the context needed to deal with them." },
       { title: "Cross-platform automation", body: "Workflows that span your email, CRM, accounting, spreadsheets and operational systems." },
     ],
+    examplesTitle: "Workflows worth automating",
     examples: [
       {
         title: "Purchase approval routing",
@@ -299,6 +232,18 @@ export const SERVICES: Service[] = [
         approach: "The figures are gathered on a schedule, checked for obvious gaps, and the report is delivered before the working week starts.",
       },
     ],
+    focus: {
+      title: "From manual work to reliable automation",
+      style: "ladder",
+      intro: "Each step in a process sits at one of these levels. Knowing which decides how it should be automated, and what should stay with a person.",
+      items: [
+        { title: "Manual process", body: "People copy data, chase approvals and check things by hand. The rules exist, but mostly in people's heads." },
+        { title: "Rules", body: "The predictable steps are written down as explicit conditions: if this happens, check that, then do this. Same input, same result." },
+        { title: "Orchestration", body: "Rules are joined into multi-step workflows across systems, with schedules, waiting states, retries and a record of what ran." },
+        { title: "Exception handling", body: "Cases the rules cannot resolve are routed to the right person with the context they need, so nothing silently fails." },
+      ],
+    },
+    order: ["focus", "feature", "builds", "examples", "limits"],
     feature: {
       kind: "comparison",
       title: "Rule-based automation and AI decision support",
@@ -312,15 +257,7 @@ export const SERVICES: Service[] = [
         { label: "Example", a: "Remind the approver after two days", b: "Read the request and suggest who should approve it" },
       ],
     },
-    engagement: {
-      steps: [
-        { title: "Map the process", body: "Document how the work happens now, including the exceptions people handle without thinking about them." },
-        { title: "Choose the approach", body: "Decide what to automate, what to leave with people, and which tools or platforms to use." },
-        { title: "Build and test", body: "Implement the workflow and test it against real scenarios, including failures and missing data." },
-        { title: "Run and monitor", body: "Launch with logging and alerts, so you can see what ran, what failed and what needs attention." },
-      ],
-      note: "Automation projects are often relatively contained. A single valuable workflow is a sensible place to start.",
-    },
+    approachNote: "Automation projects are often relatively contained. A single valuable workflow is a sensible place to start.",
     considerations: [
       { title: "Messy processes automate badly", body: "If a process is inconsistent, automating it can multiply the confusion. Sometimes the first step is simplifying it." },
       { title: "Dependent on other systems", body: "Automations rely on the applications they connect. Changes to those systems can require updates." },
@@ -334,11 +271,107 @@ export const SERVICES: Service[] = [
     cta: { title: "Got a task your team repeats every day?", body: "Describe it, including the awkward exceptions, and we'll suggest how much of it could run itself." },
   },
   {
+    slug: "custom-software",
+    href: "/solutions/custom-software",
+    tier: "core",
+    name: "Custom Software & Business Systems",
+    meta: {
+      title: "Custom Software & Business Systems",
+      description:
+        "Bespoke business software built around how you operate: portals, operational platforms, job management, scheduling, dashboards and internal tools.",
+    },
+    summary: "Portals, operational platforms and internal tools designed around how your business actually runs.",
+    hero: {
+      headline: "Software shaped around the way you work",
+      intro:
+        "When spreadsheets, shared inboxes and off-the-shelf tools no longer fit how your business runs, a purpose-built system can. We design and engineer business software around your real workflows, so your team works in one place instead of around the gaps.",
+    },
+    involves: {
+      title: "What custom software involves",
+      paragraphs: [
+        "Custom software is built for a specific organisation and the way it operates. That might be an internal platform your team uses all day, a portal for customers or suppliers, or a focused tool that replaces a fragile spreadsheet.",
+        "The work is as much about understanding the process as writing code: who does what, what information they need, where the exceptions are and what has to be recorded. The software then reflects those rules, rather than forcing your team to adapt to a generic product.",
+      ],
+    },
+    problemsTitle: "Signs you have outgrown your tools",
+    problems: [
+      "Our operation runs on spreadsheets that only one or two people fully understand.",
+      "We pay for several tools and still re-type the same information between them.",
+      "Off-the-shelf software covers 70% of what we need, and the rest is workarounds.",
+      "Customers keep emailing to ask for updates we could show them directly.",
+      "Managers can't see the state of jobs, orders or cases without asking around.",
+    ],
+    buildsTitle: "What we design and engineer",
+    builds: [
+      { title: "Operational platforms", body: "The central system for jobs, orders, cases or projects: statuses, assignments, history and the rules that move work along." },
+      { title: "Scheduling & job management", body: "Bookings, rotas, capacity and dispatch, with the constraints that matter in your business built in." },
+      { title: "Customer & supplier portals", body: "Secure areas where outside users submit requests, upload documents, track progress and see their own records." },
+      { title: "Dashboards & reporting", body: "Live views of the numbers people actually make decisions on, drawn from the system rather than compiled by hand." },
+      { title: "Internal tools", body: "Focused applications that replace a spreadsheet, a paper form or a manual check with something reliable and auditable." },
+      { title: "Extending existing systems", body: "New modules, interfaces or data models added alongside software you already run, where replacing it would be wasteful." },
+    ],
+    examplesTitle: "Systems this could look like",
+    examples: [
+      {
+        title: "A field-service job board",
+        situation: "A maintenance company tracks jobs in a spreadsheet and coordinates engineers by phone and WhatsApp.",
+        approach:
+          "A job-management system with a scheduling board, engineer assignments, mobile job sheets with photos and sign-off, and automatic customer updates when a visit is booked or completed.",
+      },
+      {
+        title: "A supplier onboarding portal",
+        situation: "A distributor collects supplier documents and certificates by email and loses track of renewals.",
+        approach:
+          "A portal where suppliers upload and update their documents, with expiry tracking, internal review steps and reminders before anything lapses.",
+      },
+      {
+        title: "An operations dashboard",
+        situation: "Directors receive a weekly report that takes half a day to assemble and is out of date when it arrives.",
+        approach: "A live dashboard fed from the operational systems, with drill-down to the underlying records and agreed definitions for each figure.",
+      },
+    ],
+    focus: {
+      title: "What shapes a bespoke system",
+      style: "columns",
+      intro: "A purpose-built system is defined by three things, agreed before it is built.",
+      items: [
+        { title: "Operational requirements", body: "Who uses it, what each person needs to do and see, the rules the work follows, the exceptions, and what must be recorded." },
+        { title: "Architecture", body: "How data is structured, who can access what, which systems it connects to and where it is hosted, designed so it can change as the business does." },
+        { title: "Product scope", body: "A focused first version that replaces the most painful part of the process, with a clear view of what comes later and what is deliberately left out." },
+      ],
+    },
+    order: ["focus", "builds", "feature", "examples", "limits"],
+    feature: {
+      kind: "comparison",
+      title: "Off-the-shelf or bespoke?",
+      intro: "Bespoke is not always the right answer. We will recommend an existing product when it genuinely fits.",
+      columns: ["Off-the-shelf software", "Custom software"],
+      rows: [
+        { label: "Fit", a: "Built for the average business in a category", b: "Built around your workflows and rules" },
+        { label: "Start-up time", a: "Fast to start using", b: "Takes time to design and build" },
+        { label: "Cost profile", a: "Ongoing per-user subscriptions", b: "Upfront build, then hosting and support" },
+        { label: "Change", a: "Depends on the vendor's roadmap", b: "Changes when your business needs them" },
+        { label: "Best when", a: "Your process is standard", b: "Your process is how you compete" },
+      ],
+    },
+    approachNote: "Most systems start with a focused first version that replaces the most painful part of the process, then grow from there.",
+    considerations: [
+      { title: "Ownership and running costs", body: "Custom software needs hosting, maintenance and occasional updates. Ownership of the code and data is agreed during scoping." },
+      { title: "Time from your team", body: "The people who do the work need to be involved in design and testing. Their input is what makes the system fit." },
+      { title: "Data migration", body: "Moving existing records across is often underestimated. It is planned and tested as part of the project, not left to the end." },
+    ],
+    related: [
+      { slug: "integrations", why: "Connect the new system to the tools you keep, such as accounting or CRM." },
+      { slug: "automation", why: "Remove the routine steps once the process lives in one place." },
+      { slug: "ai", why: "Add document reading, search or assistance inside the system." },
+    ],
+    cta: { title: "Have a process that has outgrown its tools?", body: "Tell us how the work happens today and where it breaks down." },
+  },
+  {
     slug: "integrations",
     href: "/solutions/integrations",
     tier: "core",
     name: "Systems Integration",
-    short: "Integrations",
     meta: {
       title: "Systems Integration",
       description:
@@ -357,6 +390,7 @@ export const SERVICES: Service[] = [
         "The work includes agreeing which system is the source of truth for each piece of information, how records are matched between systems, how often data moves, and what happens when something fails or conflicts.",
       ],
     },
+    problemsTitle: "Signs your systems are disconnected",
     problems: [
       "The same customer exists in three systems with slightly different details.",
       "Orders from our online shop are re-entered into our stock or accounting system by hand.",
@@ -364,6 +398,7 @@ export const SERVICES: Service[] = [
       "Reports disagree because each system has its own version of the numbers.",
       "We avoid changing software because everything is held together with manual steps.",
     ],
+    buildsTitle: "What we connect",
     builds: [
       { title: "API integrations", body: "Direct connections between systems using their APIs, built to handle authentication, limits and errors properly." },
       { title: "Data synchronisation", body: "Keeping records such as customers, products, stock and orders consistent across systems, on a schedule or in real time." },
@@ -372,6 +407,7 @@ export const SERVICES: Service[] = [
       { title: "Custom connectors", body: "Bridges for systems without a ready-made connection, including file-based exchanges with older software." },
       { title: "Integration monitoring", body: "Logs, alerts and retry handling, so you know when data didn't arrive and why." },
     ],
+    examplesTitle: "Connections that remove re-keying",
     examples: [
       {
         title: "Shop, stock and accounts in step",
@@ -391,6 +427,18 @@ export const SERVICES: Service[] = [
         approach: "A scheduled export and import process with validation, so its data reaches newer tools without replacing it.",
       },
     ],
+    focus: {
+      title: "How data moves between systems",
+      style: "path",
+      intro: "Every integration answers the same four questions. Getting them right is what makes it dependable.",
+      items: [
+        { title: "Source of truth", body: "Which system owns each type of record, so there is never a question about which version is correct." },
+        { title: "Mapping and matching", body: "How fields translate between systems, how records are matched and what happens to existing duplicates." },
+        { title: "Timing", body: "Whether data moves in real time, on a schedule or on demand, depending on how quickly the other side needs it." },
+        { title: "Failure handling", body: "Retries, alerts and a clear log of anything that did not arrive, so problems are seen and fixed rather than discovered later." },
+      ],
+    },
+    order: ["focus", "feature", "builds", "examples", "limits"],
     feature: {
       kind: "checklist",
       title: "What determines whether an integration is feasible",
@@ -403,15 +451,7 @@ export const SERVICES: Service[] = [
         { title: "Vendor terms", body: "Conditions set by software providers on how their systems may be connected and used." },
       ],
     },
-    engagement: {
-      steps: [
-        { title: "Assess the systems", body: "Review APIs, access, data and limits for each system involved, and confirm what is possible." },
-        { title: "Design the data flow", body: "Agree sources of truth, field mappings, matching rules, frequency and error handling." },
-        { title: "Build and test", body: "Implement against test or sandbox accounts where available, including failure scenarios." },
-        { title: "Go live and monitor", body: "Launch with logging and alerts, and keep connections working as vendors change their systems." },
-      ],
-      note: "A short technical assessment at the start avoids promising integrations that the systems cannot support.",
-    },
+    approachNote: "A short technical assessment at the start avoids promising integrations that the systems cannot support.",
     considerations: [
       { title: "Third-party changes", body: "Vendors update their APIs and sometimes retire features. Integrations need occasional maintenance as a result." },
       { title: "Sometimes the answer is fewer systems", body: "If two tools overlap heavily, consolidating them can be better than connecting them. We will say so." },
@@ -431,7 +471,6 @@ export const SERVICES: Service[] = [
     href: "/solutions/websites",
     tier: "supporting",
     name: "Websites & Digital Experiences",
-    short: "Websites",
     meta: {
       title: "Websites & Digital Experiences",
       description:
@@ -450,6 +489,7 @@ export const SERVICES: Service[] = [
         "The build then matters as much as the look. Fast loading, accessibility, search-friendly structure, security and a content setup your team can actually manage are all engineering decisions, not finishing touches.",
       ],
     },
+    problemsTitle: "Signs your website is holding you back",
     problems: [
       "Our website looks dated and doesn't reflect the quality of what we do.",
       "Visitors arrive but rarely enquire or book.",
@@ -457,6 +497,7 @@ export const SERVICES: Service[] = [
       "The site is slow, especially on mobile.",
       "Bookings or orders from the website still need re-typing into our systems.",
     ],
+    buildsTitle: "What we build",
     builds: [
       { title: "Company & marketing websites", body: "Clear, credible sites that explain what you do and make it easy to get in touch." },
       { title: "Booking & enquiry journeys", body: "Step-by-step flows for bookings, quotes and applications that collect the right information first time." },
@@ -465,6 +506,7 @@ export const SERVICES: Service[] = [
       { title: "Content management", body: "Editing set up so your team can update pages and content confidently without breaking the design." },
       { title: "Performance & accessibility", body: "Improving the speed, accessibility and technical quality of an existing site." },
     ],
+    examplesTitle: "Websites built to do a job",
     examples: [
       {
         title: "A service business booking journey",
@@ -482,6 +524,18 @@ export const SERVICES: Service[] = [
         approach: "A restructured site with clear service pages, an editable content system and enquiry forms that reach the right person.",
       },
     ],
+    focus: {
+      title: "Designed around the journeys that matter",
+      style: "path",
+      intro: "A website is planned around what visitors need to do, from first impression to the moment their enquiry or order reaches your business.",
+      items: [
+        { title: "Arrive", body: "Visitors understand what you do and who it is for within seconds, on any device." },
+        { title: "Decide", body: "The detail and evidence they need is there at the right depth, without hunting for it." },
+        { title: "Act", body: "Booking, buying or enquiring takes as few steps as possible, with the right information collected first time." },
+        { title: "Follow through", body: "The booking, order or enquiry reaches your systems and the customer receives a clear confirmation." },
+      ],
+    },
+    order: ["focus", "builds", "feature", "examples", "limits"],
     feature: {
       kind: "checklist",
       title: "What we build into every website",
@@ -494,15 +548,7 @@ export const SERVICES: Service[] = [
         { title: "Manageable content", body: "A sensible content setup and handover, so the site stays accurate after launch." },
       ],
     },
-    engagement: {
-      steps: [
-        { title: "Goals & journeys", body: "Agree who the site is for, what they need to do, and what the site needs to achieve for the business." },
-        { title: "Structure & design", body: "Plan pages and content, then design layouts and key journeys for review." },
-        { title: "Build & content", body: "Develop the site, load content and connect forms, bookings or e-commerce to your systems." },
-        { title: "Launch & handover", body: "Test across devices, launch, set up analytics and hand over editing and access." },
-      ],
-      note: "Content (the words, photos and product information) is usually the part that takes longest. Planning it early keeps the project on track.",
-    },
+    approachNote: "Content (the words, photos and product information) is usually the part that takes longest. Planning it early keeps the project on track.",
     considerations: [
       { title: "Content takes effort", body: "A website needs accurate, current content. Responsibility for writing and supplying it is agreed during scoping." },
       { title: "Running costs", body: "Hosting, domains, plugins, e-commerce platforms and payment providers carry their own fees." },
@@ -520,7 +566,6 @@ export const SERVICES: Service[] = [
     href: "/solutions/digital-growth",
     tier: "supporting",
     name: "SEO & Digital Growth",
-    short: "Digital Growth",
     meta: {
       title: "SEO & Digital Growth",
       description:
@@ -539,6 +584,7 @@ export const SERVICES: Service[] = [
         "Growth also depends on what happens after someone arrives. Measuring visits, enquiries and the steps between them shows where people drop away, and that evidence guides what to improve next.",
       ],
     },
+    problemsTitle: "Signs you are harder to find than you should be",
     problems: [
       "We don't appear when people search for what we do in our area.",
       "We have no clear idea which marketing actually produces enquiries.",
@@ -546,6 +592,7 @@ export const SERVICES: Service[] = [
       "Traffic arrives, but very few visitors take the next step.",
       "We've paid for SEO before and never understood what was done.",
     ],
+    buildsTitle: "What the work covers",
     builds: [
       { title: "Technical SEO", body: "Fixing crawlability, indexing, site structure, speed, structured data and the other technical factors search engines rely on." },
       { title: "Local search", body: "Business profiles, location pages and consistent business information for customers searching nearby." },
@@ -554,6 +601,7 @@ export const SERVICES: Service[] = [
       { title: "Conversion improvements", body: "Clearer pages, forms and calls to action, guided by how visitors really behave." },
       { title: "Reporting", body: "Plain-English reports on what changed, what the numbers show and what we recommend next." },
     ],
+    examplesTitle: "Where growth work helps",
     examples: [
       {
         title: "Local visibility for a service business",
@@ -571,6 +619,18 @@ export const SERVICES: Service[] = [
         approach: "Analytics and enquiry tracking set up consistently, so each channel's contribution can be seen and compared.",
       },
     ],
+    focus: {
+      title: "Measure, improve, repeat",
+      style: "columns",
+      intro: "Growth work is iterative. Each round starts from evidence and ends with a measured change.",
+      items: [
+        { title: "Visibility", body: "How you appear for relevant searches, in local results and in business listings." },
+        { title: "Behaviour", body: "What visitors do once they arrive, and where they drop away." },
+        { title: "Enquiries", body: "Which channels and pages lead to enquiries, so effort goes where it pays." },
+        { title: "Improvement", body: "Changes chosen from that evidence, then reviewed to see whether they worked." },
+      ],
+    },
+    order: ["feature", "focus", "builds", "examples", "limits"],
     feature: {
       kind: "principles",
       title: "What we will and won't promise",
@@ -582,15 +642,7 @@ export const SERVICES: Service[] = [
         { title: "Measurement first", body: "Without reliable measurement it is impossible to tell what worked. Tracking comes before optimisation." },
       ],
     },
-    engagement: {
-      steps: [
-        { title: "Audit & baseline", body: "Review technical health, content, local presence and current measurement, and record a starting point." },
-        { title: "Fix foundations", body: "Resolve technical issues and set up measurement properly before anything else." },
-        { title: "Improve content & journeys", body: "Strengthen key pages, local presence and conversion paths, based on the audit." },
-        { title: "Measure & iterate", body: "Review results regularly, report plainly and adjust priorities." },
-      ],
-      note: "Search improvements take time to show. A typical arrangement is an initial project followed by regular, measured improvement.",
-    },
+    approachNote: "Search improvements take time to show. A typical arrangement is an initial project followed by regular, measured improvement.",
     considerations: [
       { title: "It takes time", body: "Search engines re-evaluate sites gradually. Meaningful changes in visibility usually take months, not days." },
       { title: "Competition varies", body: "How hard it is to be visible depends on your market, location and the competitors around you." },

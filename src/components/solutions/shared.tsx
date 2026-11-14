@@ -25,7 +25,7 @@ export function PageCta({ title, body }: { title: string; body: string }) {
           <p className="mt-4 text-[1.0625rem] leading-relaxed text-muted md:text-lg">{body}</p>
         </div>
         <Link href="/contact" className={`${primaryBtn} shrink-0 self-start md:self-auto`}>
-          Start a conversation <span aria-hidden>→</span>
+          Start a Project <span aria-hidden>→</span>
         </Link>
       </div>
     </section>

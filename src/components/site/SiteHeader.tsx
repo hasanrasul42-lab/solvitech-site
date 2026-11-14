@@ -88,7 +88,7 @@ export default function SiteHeader() {
             ))}
           </ul>
           <div className="ml-4">
-            <SiteLinkControl link={NAV_CTA} className={ctaClass} />
+            <SiteLinkControl link={NAV_CTA} className={ctaClass} current={isCurrent(NAV_CTA.href)} />
           </div>
         </nav>
 
@@ -142,6 +142,7 @@ export default function SiteHeader() {
           <div className="mt-auto pt-10">
             <SiteLinkControl
               link={NAV_CTA}
+              current={isCurrent(NAV_CTA.href)}
               bubblePlacement="above"
               className="inline-flex h-12 items-center rounded-full bg-foreground px-6 text-base font-medium text-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft"
             />

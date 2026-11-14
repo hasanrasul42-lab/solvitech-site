@@ -8,6 +8,8 @@
  * as "agreed during scoping" until the founder approves specific terms.
  */
 
+import { SERVICES } from "./services";
+
 // --- 04 Why Solvitech -------------------------------------------------------
 
 export const WHY = {
@@ -25,14 +27,14 @@ export interface Principle {
   body: string;
 }
 
+/**
+ * Four distinct reasons, not overlapping restatements. Founder accountability
+ * is carried by the lead above; the fuller principles live on /about.
+ */
 export const PRINCIPLES: Principle[] = [
   {
     title: "Problems before technology",
-    body: "We start by understanding the process, the people involved and where time or information is being lost. The technology is chosen to fit the problem, not the other way round.",
-  },
-  {
-    title: "Practical business sense",
-    body: "Every recommendation is weighed against what it costs to build and run, how it changes day-to-day work, and whether your team will actually use it.",
+    body: "We start with the process, the people involved and where time or information is being lost, and weigh every recommendation against what it costs to build and run and whether your team will actually use it.",
   },
   {
     title: "Real engineering depth",
@@ -43,12 +45,8 @@ export const PRINCIPLES: Principle[] = [
     body: "Your workflows, data and customers are specific to you. Where an existing tool already does the job well, we will say so; where it doesn't, we build what fits.",
   },
   {
-    title: "Direct founder accountability",
-    body: "You deal directly with the founder throughout. Decisions, questions and problems don't pass through layers of account management.",
-  },
-  {
-    title: "Clear communication, honest scoping",
-    body: "Plain-English explanations, written scopes and regular updates. If something is uncertain, risky or not worth building, you hear it early.",
+    title: "Honest scoping",
+    body: "Written scopes and plain-English explanations. If something is uncertain, risky or not worth building, you hear it early.",
   },
 ];
 
@@ -139,64 +137,6 @@ export const WORKING = {
   page: "/working-together" as string | undefined,
 };
 
-export interface Engagement {
-  id: "defined" | "bespoke" | "partnership";
-  name: string;
-  bestFor: string;
-  description: string;
-  examples: string;
-}
-
-export const ENGAGEMENTS: Engagement[] = [
-  {
-    id: "defined",
-    name: "Defined projects",
-    bestFor: "A clear goal with a well-understood scope.",
-    description:
-      "A single, contained piece of work: an automation, an integration between two systems, a website or a focused internal tool. Scope and price are agreed up front.",
-    examples: "Automating a reporting process · Connecting a CRM to accounting software · A new company website",
-  },
-  {
-    id: "bespoke",
-    name: "Bespoke systems",
-    bestFor: "Larger platforms where requirements need to be shaped first.",
-    description:
-      "Custom software, AI applications or business platforms built in milestones. Discovery and design come first, so the build is planned and priced on firm ground.",
-    examples: "An operations or job-management platform · An AI assistant working with company data · A customer portal",
-  },
-  {
-    id: "partnership",
-    name: "Ongoing partnerships",
-    bestFor: "Businesses that want continuing technical support and improvement.",
-    description:
-      "An agreed monthly arrangement for support, maintenance and continuous improvement of systems we have built, or a planned roadmap of new work.",
-    examples: "Support and maintenance · Monthly improvement time · A phased automation roadmap",
-  },
-];
-
-export const COST_FACTORS = {
-  title: "What shapes cost and timeline",
-  items: [
-    { name: "Requirements", body: "How much the system needs to do, and for how many types of user." },
-    { name: "Complexity", body: "Business rules, edge cases, AI behaviour and the level of reliability needed." },
-    { name: "Integrations", body: "How many existing systems are involved, and how well documented their data and APIs are." },
-    { name: "Scope of delivery", body: "Design, content, data migration, training and documentation included." },
-    { name: "Ongoing support", body: "Hosting, monitoring, maintenance and further development after launch." },
-  ],
-};
-
-export const AGREED_IN_SCOPING = {
-  title: "Agreed in writing during scoping",
-  items: [
-    "Deliverables and what is out of scope",
-    "Milestones, timeline and payment stages",
-    "Ownership of code, content and data",
-    "Third-party costs such as hosting, software licences and AI usage",
-    "Responsibilities on both sides",
-    "Support and maintenance after launch",
-  ],
-};
-
 // --- 07 Start a Conversation --------------------------------------------------------
 
 export const CONTACT = {
@@ -220,13 +160,5 @@ export const CONTACT = {
   page: "/contact" as string | undefined,
 };
 
-/** Optional "service interest" choices on the enquiry form. */
-export const ENQUIRY_INTERESTS = [
-  "Custom software or business system",
-  "AI or intelligent application",
-  "Automation",
-  "Connecting systems",
-  "Website or e-commerce",
-  "SEO and digital growth",
-  "Not sure yet",
-];
+/** Optional "service interest" choices on the enquiry form: the official service names. */
+export const ENQUIRY_INTERESTS = [...SERVICES.map((s) => s.name), "Not sure yet"];

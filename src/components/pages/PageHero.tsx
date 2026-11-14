@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { SITE } from "@/config/site";
+import { SHARE_IMAGE, SITE } from "@/config/site";
 import { Eyebrow, gutter } from "@/components/home/Section";
 
-/** Unique title and description for an inner page. */
-export function pageMetadata(meta: { title: string; description: string }): Metadata {
+/**
+ * Unique title and description for an inner page; the canonical URL is added
+ * once the production origin is configured (SITE.url).
+ */
+export function pageMetadata(meta: { title: string; description: string }, path: string): Metadata {
   const title = `${meta.title} | ${SITE.name}`;
-  return { title, description: meta.description, openGraph: { title, description: meta.description } };
+  return {
+    title,
+    description: meta.description,
+    openGraph: { title, description: meta.description, images: [SHARE_IMAGE] },
+    ...(SITE.url ? { alternates: { canonical: path } } : {}),
+  };
 }
 
 /** Opening band for inner pages: eyebrow, the page's h1, intro and actions. */

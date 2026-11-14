@@ -10,7 +10,7 @@ import type { ServiceSlug } from "@/config/services";
 
 const panel = "rounded-2xl border border-white/[0.08] bg-[#0d1424]";
 const chip = "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium";
-const label = "text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-subtle";
+const label = "text-xs font-medium uppercase tracking-[0.12em] text-subtle";
 
 const DESCRIPTIONS: Record<ServiceSlug, { caption: string; description: string }> = {
   "custom-software": {
@@ -226,7 +226,7 @@ function BookingWireframe() {
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
             {["Choose service", "Pick a time", "Your details"].map((s, i) => (
               <div key={s} className={`rounded-lg border p-3 ${i === 1 ? "border-accent/60 bg-accent/10" : "border-white/[0.07]"}`}>
-                <p className="font-mono text-[0.6875rem] text-accent-soft">Step {i + 1}</p>
+                <p className="font-mono text-xs text-accent-soft">Step {i + 1}</p>
                 <p className="mt-1 text-sm text-foreground">{s}</p>
               </div>
             ))}

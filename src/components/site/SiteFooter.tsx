@@ -32,7 +32,7 @@ export default function SiteFooter() {
               {SERVICES.map((s) => (
                 <li key={s.slug}>
                   <Link href={s.href} className={linkClass}>
-                    {s.short}
+                    {s.name}
                   </Link>
                 </li>
               ))}
