@@ -3,6 +3,7 @@ import { WORKING_PAGE } from "@/config/pages";
 import { getService } from "@/config/services";
 import { Eyebrow, Section, SectionTitle } from "@/components/home/Section";
 import { PageCta, primaryBtn, secondaryBtn } from "@/components/solutions/shared";
+import { WorkingField } from "@/components/field/variants";
 import PageHero from "./PageHero";
 
 /**
@@ -14,7 +15,7 @@ export default function WorkingTogetherPage() {
   const W = WORKING_PAGE;
   return (
     <>
-      <PageHero eyebrow={W.eyebrow} headline={W.headline} intro={W.intro}>
+      <PageHero field={<WorkingField />} eyebrow={W.eyebrow} headline={W.headline} intro={W.intro}>
         <Link href="/contact" className={primaryBtn}>
           Start a Project <span aria-hidden>→</span>
         </Link>

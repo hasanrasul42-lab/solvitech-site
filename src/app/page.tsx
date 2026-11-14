@@ -3,6 +3,7 @@ import { INTRO_BOOT_SCRIPT } from "@/components/home/entrance/introTimeline";
 import HomeApproach from "@/components/home/HomeApproach";
 import HomeContact from "@/components/home/HomeContact";
 import HomeSolutions from "@/components/home/HomeSolutions";
+import HomeSpine from "@/components/home/HomeSpine";
 import HomeWhy from "@/components/home/HomeWhy";
 import HomeWork from "@/components/home/HomeWork";
 import HomeWorkingTogether from "@/components/home/HomeWorkingTogether";
@@ -31,7 +32,10 @@ export default function Home() {
         Skip to content
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1">
+      {/* One environment: chapters share a stacking context, so their fields and
+          the spine run across section boundaries; clip only sideways. */}
+      <main id="main" className="relative isolate flex-1 overflow-x-clip">
+        <HomeSpine />
         <HomeEntrance />
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
         <HomeSolutions />

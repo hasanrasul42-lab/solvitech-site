@@ -15,11 +15,17 @@ export function Section({
   id,
   tone = "base",
   className = "",
+  field,
+  seamless = false,
   children,
 }: {
   id: string;
   tone?: "base" | "raised";
+  /** Homepage: no band, border or stacking context -- one continuous environment. */
+  seamless?: boolean;
   className?: string;
+  /** Decorative Solvitech Field behind the chapter. */
+  field?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -27,8 +33,9 @@ export function Section({
       id={id}
       data-chapter={id}
       aria-labelledby={`${id}-title`}
-      className={`relative isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"} ${anchorOffset} ${className}`}
+      className={`relative ${seamless ? "" : `isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"}`} ${anchorOffset} ${className}`}
     >
+      {field}
       <div className={`mx-auto w-full max-w-[1440px] py-20 md:py-24 lg:py-28 ${gutter}`}>{children}</div>
     </section>
   );
@@ -48,7 +55,7 @@ export function SectionTitle({ id, children, className = "" }: { id: string; chi
   return (
     <h2
       id={`${id}-title`}
-      className={`mt-5 text-[clamp(2.1rem,8vw,2.75rem)] font-semibold leading-[1.04] tracking-[-0.035em] text-foreground md:text-[clamp(2.75rem,5.4vw,3.5rem)] lg:text-[clamp(3rem,3.9vw,3.75rem)] ${className}`}
+      className={`reveal mt-5 text-[clamp(2.1rem,8vw,2.75rem)] font-semibold leading-[1.04] tracking-[-0.035em] text-foreground md:text-[clamp(2.75rem,5.4vw,3.5rem)] lg:text-[clamp(3rem,3.9vw,3.75rem)] ${className}`}
     >
       {children}
       <span className="text-accent">.</span>

@@ -4,6 +4,7 @@ import { CONTACT_PAGE } from "@/config/pages";
 import { getService } from "@/config/services";
 import { Eyebrow, gutter } from "@/components/home/Section";
 import ContactForm from "@/components/home/ContactForm";
+import { ContactField } from "@/components/field/variants";
 
 /**
  * /contact -- the dedicated enquiry destination. A confident opening, what we
@@ -15,10 +16,7 @@ export default function ContactPage() {
   const preview = !CONTACT.email;
   return (
     <section aria-labelledby="page-title" className="relative isolate overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[radial-gradient(ellipse_60%_60%_at_15%_0%,rgb(54_123_250/0.11),transparent_70%)]"
-      />
+      <ContactField />
       <div
         className={`mx-auto grid w-full max-w-[1440px] gap-14 pb-24 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] lg:grid-cols-12 lg:gap-16 ${gutter}`}
       >

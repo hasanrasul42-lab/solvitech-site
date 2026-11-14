@@ -24,6 +24,7 @@ export default function PageHero({
   intro,
   children,
   aside,
+  field,
 }: {
   eyebrow: string;
   headline: string;
@@ -32,21 +33,25 @@ export default function PageHero({
   children?: ReactNode;
   /** Optional right-hand column on desktop. */
   aside?: ReactNode;
+  /** The page's Solvitech Field variant. */
+  field?: ReactNode;
 }) {
   return (
     <section aria-labelledby="page-title" className="relative isolate overflow-hidden">
+      {field ?? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(ellipse_65%_60%_at_20%_0%,rgb(54_123_250/0.10),transparent_70%)]"
+        />
+      )}
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(ellipse_65%_60%_at_20%_0%,rgb(54_123_250/0.10),transparent_70%)]"
-      />
-      <div
-        className={`mx-auto grid w-full max-w-[1440px] gap-12 pb-16 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-24 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] ${aside ? "lg:grid-cols-12 lg:items-end lg:gap-16" : ""} ${gutter}`}
+        className={`mx-auto grid w-full max-w-[1440px] gap-12 pb-16 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-24 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] lg:min-h-[42rem] lg:content-center ${aside ? "lg:grid-cols-12 lg:items-end lg:gap-16" : ""} ${gutter}`}
       >
         <div className={aside ? "lg:col-span-7" : ""}>
           <Eyebrow>{eyebrow}</Eyebrow>
           <h1
             id="page-title"
-            className="mt-5 max-w-[18ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.8vw,4.75rem)]"
+            className="reveal mt-5 max-w-[18ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.8vw,4.75rem)]"
           >
             {headline}
             <span className="text-accent">.</span>

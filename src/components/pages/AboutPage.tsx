@@ -4,6 +4,7 @@ import { ABOUT, FOUNDER } from "@/config/pages";
 import { CORE_SERVICES, SUPPORTING_SERVICES } from "@/config/services";
 import { Eyebrow, Section, SectionTitle } from "@/components/home/Section";
 import { PageCta, primaryBtn, secondaryBtn } from "@/components/solutions/shared";
+import { AboutField } from "@/components/field/variants";
 import PageHero from "./PageHero";
 
 /**
@@ -15,7 +16,7 @@ export default function AboutPage() {
   const profile = FOUNDER.name && FOUNDER.introduction;
   return (
     <>
-      <PageHero eyebrow={ABOUT.eyebrow} headline={ABOUT.headline} intro={ABOUT.intro}>
+      <PageHero field={<AboutField />} eyebrow={ABOUT.eyebrow} headline={ABOUT.headline} intro={ABOUT.intro}>
         <Link href="/solutions" className={primaryBtn}>
           Explore Solutions <span aria-hidden>→</span>
         </Link>

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { SHARE_IMAGE, SITE } from "@/config/site";
 import { getService, type Feature, type Focus, type SectionKey, type Service, type ServiceSlug } from "@/config/services";
 import { Eyebrow, Section, SectionTitle, gutter } from "@/components/home/Section";
-import ServiceVisual from "./ServiceVisual";
+import { ServiceField } from "@/components/field/variants";
 import { PageCta, primaryBtn, secondaryBtn } from "./shared";
 
 /** Unique title and description for a service page. */
@@ -38,11 +38,8 @@ export default function ServicePage({ slug }: { slug: ServiceSlug }) {
     <>
       {/* Hero */}
       <section aria-labelledby="service-title" className="relative isolate overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(ellipse_65%_60%_at_20%_0%,rgb(54_123_250/0.10),transparent_70%)]"
-        />
-        <div className={`mx-auto w-full max-w-[1440px] pb-14 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-20 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] ${gutter}`}>
+        <ServiceField slug={s.slug} />
+        <div className={`mx-auto w-full max-w-[1440px] pb-16 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-24 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] lg:min-h-[46rem] ${gutter}`}>
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-2 text-sm text-subtle">
               <li>
@@ -60,13 +57,13 @@ export default function ServicePage({ slug }: { slug: ServiceSlug }) {
             <Eyebrow>{s.name}</Eyebrow>
             <h1
               id="service-title"
-              className="mt-5 max-w-[20ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.6vw,4.5rem)]"
+              className="reveal mt-5 max-w-[20ch] lg:max-w-[15ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.6vw,4.5rem)]"
             >
               {s.hero.headline}
               <span className="text-accent">.</span>
             </h1>
           </div>
-          <p className="mt-7 max-w-[44rem] text-[1.0625rem] leading-relaxed text-muted md:text-lg">{s.hero.intro}</p>
+          <p className="mt-7 max-w-[44rem] text-[1.0625rem] leading-relaxed text-muted md:text-lg lg:max-w-[40rem]">{s.hero.intro}</p>
           <div className="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
             <Link href="/contact" className={primaryBtn}>
               Start a Project <span aria-hidden>→</span>
@@ -74,9 +71,6 @@ export default function ServicePage({ slug }: { slug: ServiceSlug }) {
             <Link href="/solutions" className={secondaryBtn}>
               Explore Solutions
             </Link>
-          </div>
-          <div className="mt-14 md:mt-20">
-            <ServiceVisual slug={s.slug} />
           </div>
         </div>
       </section>

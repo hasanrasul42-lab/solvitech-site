@@ -1,0 +1,375 @@
+/*
+ * The Solvitech Field -- shared visual vocabulary.
+ *
+ * Depth layers drift with the damped pointer (transform only), light planes
+ * move without repainting, a brighter copy of the geometry is revealed around
+ * the pointer, and paths draw with the scroll position (CSS scroll-driven
+ * animations: no JavaScript, no scroll hijacking). Without support for
+ * scroll-driven animations, or with reduced motion, everything shows its
+ * finished state. All of it is decorative and ignores the pointer.
+ */
+
+:root {
+  /* Precise, decelerating motion used across the site. */
+  --ease-precise: cubic-bezier(0.22, 0.61, 0.21, 1);
+  --fld-blue: 54 123 250;
+  --fld-ice: 150 180 230;
+}
+
+/* In a cascade layer, so Tailwind utilities on a field (position, size, masks) win. */
+@layer components {
+
+.fld {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Isolate its restyles and repaints from the page. */
+  contain: strict;
+  view-timeline: --fld block;
+  /* Resting light position (touch devices, before the pointer moves). */
+  --fx: var(--rest-x, 70%);
+  --fy: var(--rest-y, 40%);
+}
+
+/* Depth layer: drifts by --d px at the edges of the viewport. */
+.fld-l {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(calc(var(--tx, 0) * var(--d, 0) * -1px), calc(var(--ty, 0) * var(--d, 0) * -0.6px), 0);
+}
+
+.fld-l > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Light plane: a soft-edged ellipse that leans towards the pointer. */
+.fld-glow {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgb(var(--glow, var(--fld-blue)) / var(--a, 0.14)), rgb(var(--glow, var(--fld-blue)) / 0) 100%);
+  transform: translate3d(calc(-50% + var(--tx, 0) * var(--follow, 0) * 1px), calc(-50% + var(--ty, 0) * var(--follow, 0) * 0.7px), 0);
+}
+
+
+
+/* Stroke colour tokens for SVG geometry (stroke="currentColor"). */
+.fld-ink-faint { color: rgb(var(--fld-ice) / 0.07); }
+.fld-ink-soft { color: rgb(var(--fld-ice) / 0.13); }
+.fld-ink { color: rgb(var(--fld-ice) / 0.2); }
+.fld-ink-blue { color: rgb(var(--fld-blue) / 0.38); }
+
+/* Paths drawn with pathLength="1". Finished state by default. */
+.fld-draw {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+
+@keyframes fld-draw {
+  from { stroke-dashoffset: 1; }
+}
+@keyframes fld-fade {
+  from { opacity: 0; }
+}
+@keyframes fld-rise {
+  from { opacity: 0; transform: translateY(1.25rem); }
+}
+@keyframes fld-scale-x {
+  from { transform: scaleX(0); }
+}
+@keyframes fld-scale-y {
+  from { transform: scaleY(0); }
+}
+@keyframes fld-node {
+  from { border-color: rgb(var(--fld-blue) / 0.25); color: rgb(var(--fld-ice) / 0.55); box-shadow: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fld-draw {
+      animation: fld-draw linear both;
+      animation-timeline: --fld;
+      animation-range: var(--from, entry 0%) var(--to, cover 42%);
+    }
+    .fld-fade {
+      animation: fld-fade linear both;
+      animation-timeline: --fld;
+      animation-range: var(--from, entry 0%) var(--to, cover 35%);
+    }
+
+    /* Major headings and visuals rise in once, tied to their own position. */
+    .reveal {
+      animation: fld-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+
+    /* Progress along a route, tied to its section (.tl-section). */
+    .tl-section {
+      view-timeline: --sect block;
+    }
+    .prog-x,
+    .prog-y {
+      animation: fld-scale-x linear both;
+      animation-timeline: --sect;
+      animation-range: var(--from, entry 60%) var(--to, cover 55%);
+    }
+    .prog-y {
+      animation-name: fld-scale-y;
+    }
+    .prog-node {
+      animation: fld-node linear both;
+      animation-timeline: --sect;
+      animation-range: var(--from, entry 60%) var(--to, entry 80%);
+    }
+  }
+}
+
+.prog-x { transform-origin: 0 50%; }
+.prog-y { transform-origin: 50% 0; }
+
+/* View transitions between pages: a short cross-fade with a slight rise;
+   the header stays put. Progressive enhancement. */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(root) {
+  animation: 180ms var(--ease-precise) both vt-out;
+}
+::view-transition-new(root) {
+  animation: 320ms var(--ease-precise) both vt-in;
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+@keyframes vt-out {
+  to { opacity: 0; }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Homepage service map (ServiceMap.tsx): four regions, two axes, one centre.
+   --------------------------------------------------------------------------- */
+.svc-ax {
+  position: absolute;
+  background: rgb(var(--fld-ice) / 0.16);
+}
+.svc-ax::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 450ms var(--ease-precise);
+}
+.svc-ax-l,
+.svc-ax-r {
+  top: 50%;
+  height: 1px;
+  width: calc(50% + 3rem);
+}
+.svc-ax-l { right: 50%; transform-origin: 100% 50%; background: linear-gradient(to left, rgb(var(--fld-ice) / 0.18), rgb(var(--fld-ice) / 0)); }
+.svc-ax-r { left: 50%; transform-origin: 0 50%; background: linear-gradient(to right, rgb(var(--fld-ice) / 0.18), rgb(var(--fld-ice) / 0)); }
+.svc-ax-t,
+.svc-ax-b {
+  left: 50%;
+  width: 1px;
+  height: calc(50% + 3rem);
+}
+.svc-ax-t { bottom: 50%; transform-origin: 50% 100%; background: linear-gradient(to top, rgb(var(--fld-ice) / 0.18), rgb(var(--fld-ice) / 0)); }
+.svc-ax-b { top: 50%; transform-origin: 50% 0; background: linear-gradient(to bottom, rgb(var(--fld-ice) / 0.18), rgb(var(--fld-ice) / 0)); }
+.svc-ax-l::after { background: linear-gradient(to left, rgb(110 160 255 / 0.95), rgb(110 160 255 / 0) 85%); }
+.svc-ax-r::after { background: linear-gradient(to right, rgb(110 160 255 / 0.95), rgb(110 160 255 / 0) 85%); }
+.svc-ax-t::after { background: linear-gradient(to top, rgb(110 160 255 / 0.95), rgb(110 160 255 / 0) 85%); }
+.svc-ax-b::after { background: linear-gradient(to bottom, rgb(110 160 255 / 0.95), rgb(110 160 255 / 0) 85%); }
+
+.svc-node {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.625rem;
+  height: 0.625rem;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: rgb(var(--fld-blue) / 0.9);
+  box-shadow: 0 0 0 6px var(--color-background, #070b14), 0 0 0 7px rgb(var(--fld-blue) / 0.35);
+  transition: box-shadow 450ms var(--ease-precise), background-color 450ms var(--ease-precise);
+}
+
+/* A region lights the two axes it sits on, and the centre. */
+.svc-map:has([data-q="tl"]:is(:hover, :focus-within)) :is(.svc-ax-l, .svc-ax-t)::after,
+.svc-map:has([data-q="tr"]:is(:hover, :focus-within)) :is(.svc-ax-r, .svc-ax-t)::after,
+.svc-map:has([data-q="bl"]:is(:hover, :focus-within)) :is(.svc-ax-l, .svc-ax-b)::after,
+.svc-map:has([data-q="br"]:is(:hover, :focus-within)) :is(.svc-ax-r, .svc-ax-b)::after {
+  opacity: 1;
+}
+.svc-map:has(.svc-p:is(:hover, :focus-within)) .svc-node {
+  background: rgb(150 190 255);
+  box-shadow: 0 0 0 6px var(--color-background, #070b14), 0 0 0 7px rgb(var(--fld-blue) / 0.8), 0 0 24px 8px rgb(var(--fld-blue) / 0.35);
+}
+
+/* Edge light on the side of each region that faces the centre. */
+.svc-edge {
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  opacity: 0;
+  background: linear-gradient(to bottom, transparent, rgb(110 160 255 / 0.8), transparent);
+  transition: opacity 450ms var(--ease-precise);
+}
+@media (min-width: 768px) {
+  [data-q="tl"] .svc-edge,
+  [data-q="bl"] .svc-edge { right: -1px; }
+  [data-q="tr"] .svc-edge,
+  [data-q="br"] .svc-edge { left: -1px; }
+  .svc-p:is(:hover, :focus-within) .svc-edge { opacity: 1; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .svc-ax-l,
+    .svc-ax-r {
+      animation: fld-scale-x linear both;
+      animation-timeline: view();
+      animation-range: entry 35% cover 50%;
+    }
+    .svc-ax-t,
+    .svc-ax-b {
+      animation: fld-scale-y linear both;
+      animation-timeline: view();
+      animation-range: entry 35% cover 50%;
+    }
+    .svc-node {
+      animation: fld-fade linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 40%;
+    }
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   The cursor trail (runtime.ts): one fixed canvas for the whole site.
+   --------------------------------------------------------------------------- */
+.fld-trail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 35; /* above content, under the header (z-40) */
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ---------------------------------------------------------------------------
+   Environmental response. --e (0..1) is written by the runtime when the trail
+   or the homepage spine passes near; CSS turns it into light and movement.
+   --------------------------------------------------------------------------- */
+.fld-r {
+  --e: 0;
+}
+.fld-r > .fld-base {
+  stroke: color-mix(in oklab, rgb(150 188 255 / 0.8) calc(var(--e) * 62%), currentColor);
+  stroke-width: calc(var(--w, 1) * 1px + var(--e) * 0.5px);
+}
+/* A pulse that travels along an energised path (a connection activating). */
+.fld-pulse {
+  color: rgb(205 224 255);
+  stroke-dasharray: 0.07 1.2;
+  stroke-dashoffset: 0.07;
+  opacity: 0;
+  transition: opacity 600ms var(--ease-precise);
+}
+[data-live] > .fld-pulse {
+  opacity: calc(0.2 + var(--e) * 0.6);
+  animation: fld-pulse 1.5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes fld-pulse {
+  from { stroke-dashoffset: 0.07; }
+  to { stroke-dashoffset: -1.05; }
+}
+/* AI: the scattered mark gives way to its aligned form. */
+.fld-alt {
+  color: rgb(170 200 255);
+  opacity: var(--e);
+}
+.fld-r:has(> .fld-alt) > .fld-base {
+  opacity: calc(1 - var(--e) * 0.9);
+}
+/* Layered surfaces lift towards the visitor. */
+.fld-lift {
+  transform-box: fill-box;
+  translate: 0 calc(var(--e) * var(--lift, 6px) * -1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-live] > .fld-pulse {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Homepage spine (HomeSpine.tsx): the continuous course through the chapters.
+   --------------------------------------------------------------------------- */
+.spine-dormant {
+  stroke: rgb(var(--fld-ice) / 0.07);
+  stroke-width: 1px;
+}
+.spine-lit {
+  stroke: rgb(110 160 255 / 0.42);
+  stroke-width: 1.25px;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+.spine-glow {
+  stroke: rgb(200 222 255 / 0.9);
+  stroke-width: 1.75px;
+  stroke-linecap: round;
+  stroke-dasharray: 0.045 2;
+  opacity: 0;
+}
+.spine-head {
+  opacity: 0;
+  transition: opacity 400ms var(--ease-precise);
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-lit {
+    stroke-dashoffset: 0;
+  }
+}
+
+} /* @layer components */
+
+/* Content that responds to the trail (ReactZone): light along the edge. */
+.rx {
+  --e: 0;
+}
+.rx-panel {
+  box-shadow: inset 0 0 0 1px rgb(120 168 255 / calc(var(--e) * 0.5)), 0 0 calc(var(--e) * 40px) rgb(54 123 250 / calc(var(--e) * 0.12));
+}
+.rx-node {
+  box-shadow: 0 0 0 5px var(--node-ring, #080d17), 0 0 calc(16px + var(--e) * 26px) rgb(54 123 250 / calc(0.3 + var(--e) * 0.5));
+  border-color: rgb(var(--fld-blue) / calc(0.7 + var(--e) * 0.3));
+}

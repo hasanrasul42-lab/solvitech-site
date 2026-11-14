@@ -3,6 +3,7 @@ import { STAGES, STAGE_LABELS } from "@/config/home";
 import { APPROACH_PAGE } from "@/config/pages";
 import { Eyebrow, Section, SectionTitle } from "@/components/home/Section";
 import { PageCta, primaryBtn, secondaryBtn } from "@/components/solutions/shared";
+import { ApproachField } from "@/components/field/variants";
 import PageHero from "./PageHero";
 
 /**
@@ -15,7 +16,7 @@ export default function ApproachPage() {
   const stages = STAGES.map((s) => ({ ...s, ...APPROACH_PAGE.stages.find((d) => d.id === s.id)! }));
   return (
     <>
-      <PageHero eyebrow={APPROACH_PAGE.eyebrow} headline={APPROACH_PAGE.headline} intro={APPROACH_PAGE.intro}>
+      <PageHero field={<ApproachField />} eyebrow={APPROACH_PAGE.eyebrow} headline={APPROACH_PAGE.headline} intro={APPROACH_PAGE.intro}>
         <a href="#stages" className={primaryBtn}>
           Walk through the stages <span aria-hidden>↓</span>
         </a>
@@ -25,13 +26,21 @@ export default function ApproachPage() {
       </PageHero>
 
       {/* Process diagram: four stages and the outcome each ends with. */}
-      <section aria-label="The four stages at a glance" className="border-t border-hairline bg-[#0a0f1a]">
+      <section aria-label="The four stages at a glance" className="tl-section border-t border-hairline bg-[#0a0f1a]">
         <div className="mx-auto w-full max-w-[1440px] px-[max(1.25rem,env(safe-area-inset-left))] py-12 sm:px-8 md:py-16 lg:px-12">
           <ol className="relative grid gap-6 md:grid-cols-4 md:gap-0">
-            <span aria-hidden className="absolute left-5 right-5 top-5 hidden h-px bg-gradient-to-r from-accent/70 via-accent/40 to-accent/70 md:block" />
+            <span aria-hidden className="absolute left-5 right-5 top-5 hidden h-px bg-white/[0.1] md:block" />
+            <span
+              aria-hidden
+              className="prog-x absolute left-5 right-5 top-5 hidden h-px bg-gradient-to-r from-accent via-accent/70 to-accent-soft md:block"
+              style={{ ["--from" as string]: "entry 40%", ["--to" as string]: "cover 50%" }}
+            />
             {stages.map((s, i) => (
               <li key={s.id} className="relative grid grid-cols-[2.5rem_1fr] gap-4 md:block md:pr-6">
-                <span className="relative z-10 grid h-10 w-10 place-items-center rounded-full border border-accent/60 bg-[#0a0f1a] font-mono text-sm text-accent-soft">
+                <span
+                  className="prog-node relative z-10 grid h-10 w-10 place-items-center rounded-full border border-accent/70 bg-[#0a0f1a] font-mono text-sm text-accent-soft shadow-[0_0_0_5px_#0a0f1a,0_0_18px_rgb(54_123_250/0.35)]"
+                  style={{ ["--from" as string]: `entry ${40 + i * 18}%`, ["--to" as string]: `entry ${55 + i * 18}%` }}
+                >
                   {i + 1}
                 </span>
                 <div className="md:mt-5">

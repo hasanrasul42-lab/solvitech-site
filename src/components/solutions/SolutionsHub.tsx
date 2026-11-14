@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CORE_SERVICES, HUB, SUPPORTING_SERVICES, getService } from "@/config/services";
 import { Eyebrow, Section, SectionTitle, gutter } from "@/components/home/Section";
+import { HubField } from "@/components/field/variants";
 import { PageCta, primaryBtn, secondaryBtn } from "./shared";
 
 /**
@@ -12,15 +13,12 @@ export default function SolutionsHub() {
   return (
     <>
       <section aria-labelledby="hub-title" className="relative isolate overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(ellipse_65%_60%_at_20%_0%,rgb(54_123_250/0.10),transparent_70%)]"
-        />
-        <div className={`mx-auto w-full max-w-[1440px] pb-16 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-24 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] ${gutter}`}>
+        <HubField />
+        <div className={`mx-auto w-full max-w-[1440px] pb-16 pt-[calc(var(--header-height)+env(safe-area-inset-top)+3rem)] md:pb-24 md:pt-[calc(var(--header-height)+env(safe-area-inset-top)+4.5rem)] lg:flex lg:min-h-[44rem] lg:flex-col lg:justify-center ${gutter}`}>
           <Eyebrow>{HUB.eyebrow}</Eyebrow>
           <h1
             id="hub-title"
-            className="mt-5 max-w-[18ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.8vw,4.75rem)]"
+            className="reveal mt-5 max-w-[18ch] text-[clamp(2.4rem,9vw,3.25rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.25rem,6.4vw,4.25rem)] lg:text-[clamp(3.5rem,4.8vw,4.75rem)]"
           >
             {HUB.headline}
             <span className="text-accent">.</span>

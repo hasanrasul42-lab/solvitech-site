@@ -74,7 +74,7 @@ export default function SiteHeader() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-[background-color,border-color] duration-300 ${surface}`}
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      style={{ paddingTop: "env(safe-area-inset-top)", viewTransitionName: "site-header" }}
     >
       <div className="mx-auto flex h-[var(--header-height)] max-w-[1440px] items-center justify-between px-[max(1.25rem,env(safe-area-inset-left))] sm:px-8 lg:px-12">
         <BrandLogo onNavigate={() => open && close(false)} />

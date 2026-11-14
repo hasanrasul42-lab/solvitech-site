@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Field, Glow, Layer, Lines } from "@/components/field/Field";
+import { converging } from "@/components/field/geometry";
 import { CONTACT } from "@/config/home";
 import ContactForm from "./ContactForm";
 import { Eyebrow, SectionTitle, anchorOffset, gutter, textLink } from "./Section";
@@ -13,12 +15,15 @@ export default function HomeContact() {
       id="contact"
       data-chapter="contact"
       aria-labelledby="contact-title"
-      className={`relative isolate overflow-hidden border-t border-hairline bg-[#0a0f1a] ${anchorOffset}`}
+      className={`relative ${anchorOffset}`}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_55%_at_15%_100%,rgb(54_123_250/0.12),transparent_70%)]"
-      />
+      <Field rest={["68%", "50%"]} className="-top-48 [mask-image:linear-gradient(to_bottom,transparent,#000_16rem)]">
+        <Glow x="68%" y="56%" w="72rem" h="46rem" alpha={0.09} follow={22} />
+        <Glow x="12%" y="100%" w="56rem" h="34rem" alpha={0.06} />
+        <Layer depth={14}>
+          <Lines shapes={converging(1000, 450)} fit="xMaxYMid slice" />
+        </Layer>
+      </Field>
       <div className={`mx-auto grid w-full max-w-[1440px] gap-12 py-20 md:py-24 lg:grid-cols-12 lg:gap-16 lg:py-32 ${gutter}`}>
         <div className="lg:col-span-5">
           <Eyebrow>{CONTACT.eyebrow}</Eyebrow>
@@ -43,7 +48,7 @@ export default function HomeContact() {
           )}
         </div>
 
-        <div className="rounded-[24px] border border-white/[0.08] bg-[#080d17]/70 p-5 sm:p-8 lg:col-span-7 lg:p-10">
+        <div className="reveal rounded-[24px] border border-white/[0.09] bg-[#080d17]/[0.94] p-5 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.8)] sm:p-8 lg:col-span-7 lg:p-10">
           <ContactForm />
         </div>
       </div>

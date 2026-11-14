@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Field, Glow, Layer, Lines } from "@/components/field/Field";
+import { CALM_RULES } from "@/components/field/geometry";
 import { WORKING } from "@/config/home";
 import { WORKING_PAGE } from "@/config/pages";
 import { secondaryBtn } from "@/components/solutions/shared";
@@ -11,7 +13,19 @@ import { Eyebrow, Section, SectionTitle } from "./Section";
  */
 export default function HomeWorkingTogether() {
   return (
-    <Section id="working-together">
+    <Section
+      id="working-together"
+      seamless
+      field={
+        <Field rest={["70%", "70%"]} className={`-inset-y-40 [mask-image:linear-gradient(to_bottom,transparent,#000_16rem,#000_calc(100%-16rem),transparent)]`}>
+          <Glow x="50%" y="50%" w="110rem" h="40rem" alpha={0.05} color="64 96 160" />
+          <Glow x="75%" y="70%" w="60rem" h="34rem" alpha={0.05} follow={16} color="var(--fld-ice)" />
+          <Layer depth={8} className="[mask-image:linear-gradient(to_right,transparent,#000_30%)]">
+            <Lines shapes={CALM_RULES} fit="xMaxYMax slice" />
+          </Layer>
+        </Field>
+      }
+    >
       <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
         <div className="lg:col-span-7">
           <Eyebrow>{WORKING.eyebrow}</Eyebrow>
@@ -24,8 +38,12 @@ export default function HomeWorkingTogether() {
         {WORKING_PAGE.models.map((m, i) => (
           <li
             key={m.id}
-            className="border-t border-hairline py-8 first:border-t-0 lg:border-l lg:border-t-0 lg:px-8 lg:py-10 lg:first:border-l-0 lg:first:pl-0 lg:last:pr-0"
+            className="group relative border-t border-hairline py-8 transition-colors duration-500 ease-[var(--ease-precise)] first:border-t-0 lg:border-l lg:border-t-0 lg:px-8 lg:py-10 lg:first:border-l-0 lg:first:pl-0 lg:last:pr-0 lg:hover:bg-white/[0.018]"
           >
+            <span
+              aria-hidden
+              className="absolute inset-x-0 top-[-1px] h-px origin-left scale-x-0 bg-gradient-to-r from-accent/80 to-transparent transition-transform duration-500 ease-[var(--ease-precise)] group-hover:scale-x-100 max-lg:hidden"
+            />
             <span aria-hidden className="font-mono text-xs text-accent-soft">
               {String(i + 1).padStart(2, "0")}
             </span>
