@@ -23,6 +23,8 @@ export interface Shape {
   alt?: string;
   /** Lifts by this many px when energised (layered surfaces). */
   lift?: number;
+  /** Time-based drawing delay in ms (hero: draws in after the intro). */
+  delay?: number;
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -53,6 +55,32 @@ export const RIBBON_WHITE =
   "M 431 15 L 60 189 L 42 199 L 28 212 L 21 222 L 16 232 L 11 250 L 11 269 L 14 282 L 21 298 L 27 307 L 36 317 L 47 326 L 94 351 L 92 333 L 96 317 L 104 304 L 118 292 L 402 160 L 414 153 L 425 141 L 431 126 Z";
 export const RIBBON_BLUE =
   "M 413 290 L 405 280 L 391 268 L 344 242 L 343 243 L 345 250 L 345 264 L 341 277 L 335 287 L 324 298 L 318 302 L 78 413 L 28 438 L 18 450 L 14 461 L 14 570 L 372 407 L 394 395 L 413 376 L 422 359 L 426 343 L 425 318 L 421 305 Z";
+
+// --- Hero: directional flow around the mark ------------------------------------------
+// A family of long curves sweeping from lower left to upper right, gathered
+// where the mark sits (about 70% / 50% on desktop) like the ribbon's own
+// direction, plus fine orbit arcs around it. Lines flex and light under the
+// cursor trail.
+
+const MARK: [number, number] = [1010, 450];
+export const HERO_FLOW: Shape[] = [
+  ...Array.from({ length: 15 }, (_, i): Shape => {
+    const o = (i - 7) * 30;
+    const gather = 0.55; // compression near the mark
+    return {
+      d: `M-80 ${r1(700 + o * 1.5)} C420 ${r1(690 + o * 1.3)} ${r1(MARK[0] - 330)} ${r1(MARK[1] + 120 + o * gather)} ${MARK[0]} ${r1(MARK[1] + o * gather)} S${r1(1300)} ${r1(150 + o * 1.4)} 1540 ${r1(80 + o * 1.8)}`,
+      ink: i === 7 ? "blue" : i === 5 || i === 9 ? "ink" : i % 2 ? "soft" : "faint",
+      width: i === 7 ? 1.4 : 1,
+      draw: true,
+      lift: 5 + (i % 3) * 2,
+      delay: 120 + Math.abs(i - 7) * 70,
+    };
+  }),
+  ...[300, 380, 470].flatMap((r, i): Shape[] => [
+    { d: arc(MARK[0], MARK[1], r, 196 + i * 6, 262 - i * 4), ink: i === 1 ? "blue" : "faint", delay: 700 + i * 120 },
+    { d: arc(MARK[0], MARK[1], r, 10 + i * 6, 78 - i * 4), ink: "faint", delay: 820 + i * 120 },
+  ]),
+];
 
 // --- Hero to Solutions: light and lines flowing out from beneath the mark -------------
 

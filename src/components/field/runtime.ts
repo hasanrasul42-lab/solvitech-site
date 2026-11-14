@@ -4,9 +4,10 @@
  * One passive pointer listener and one requestAnimationFrame loop drive:
  *
  *  1. The cursor trail: a fine luminous filament drawn on a single fixed
- *     Canvas 2D layer. A damped follower chases the pointer (inertia); its
- *     recent path is kept for ~0.7 s and drawn as a tapering ribbon, so fast
- *     movement leaves a longer, brighter trail and the tail decays on its own.
+ *     Canvas 2D layer. Its tip sits exactly at the pointer (no lag); every
+ *     raw pointer sample (coalesced events) from the last ~0.55 s is drawn as
+ *     a smooth, tapering spline, so fast movement leaves a longer, brighter
+ *     trail and the tail dissolves on its own.
  *  2. Environmental response: geometry marked `data-react` (inside registered
  *     fields) samples its own shape into page coordinates once per layout. Each
  *     frame, elements near the trail -- or near the homepage spine's head --
@@ -39,6 +40,23 @@ type Spine = {
   top: number;
 };
 
+/** A trail point: client coords, time (ms), speed (px/ms). */
+export type TrailPoint = { x: number; y: number; t: number; v: number };
+export type PaintState = {
+  now: number;
+  dt: number;
+  /** Damped pointer, -1..1 (0 when the trail is off). */
+  tx: number;
+  ty: number;
+  trail: readonly TrailPoint[];
+  trailMs: number;
+  interactive: boolean;
+  reduced: boolean;
+};
+/** Canvas painters (e.g. the hero flow) draw on the shared frame; return true while animating. */
+type Painter = (s: PaintState) => boolean;
+
+const painters = new Set<Painter>();
 const fields = new Set<Field>();
 let spine: Spine | null = null;
 let observer: IntersectionObserver | null = null;
@@ -52,9 +70,6 @@ let hidden = false;
 // Pointer (client coords) and the damped follower.
 let px = 0;
 let py = 0;
-let hx = 0;
-let hy = 0;
-let hasPointer = false;
 // Parallax pointer for depth layers.
 let sx = 0;
 let sy = 0;
@@ -62,11 +77,10 @@ let scrolled = true;
 let layoutDirty = true;
 
 /** Trail history: page-independent client coords, with birth time (ms). */
-const pts: { x: number; y: number; t: number; v: number }[] = [];
-const TRAIL_MS = 720;
-const MAX_PTS = 64;
-const FOLLOW = 22; // follower stiffness: higher = tighter to the pointer
-const PARALLAX = 6.5;
+const pts: TrailPoint[] = [];
+const TRAIL_MS = 560;
+const MAX_PTS = 96;
+const PARALLAX = 9;
 const REACH = 150; // px: how far the trail's influence extends
 const SPINE_REACH = 210;
 
@@ -235,8 +249,8 @@ function react(dt: number): boolean {
   if (spineHead) src.push({ x: spineHead.x, y: spineHead.y, w: 0.6, r: SPINE_REACH });
 
   let active = false;
-  const up = 1 - Math.exp(-dt * 14);
-  const down = 1 - Math.exp(-dt * 1.6);
+  const up = 1 - Math.exp(-dt * 40);
+  const down = 1 - Math.exp(-dt * 2.2);
   for (const f of fields) {
     if (!f.visible) continue;
     let before: Reactive | null = null;
@@ -265,7 +279,7 @@ function react(dt: number): boolean {
       if (Math.abs(r.e - prev) > 0.003 || (r.e === 0 && prev !== 0)) {
         (r.el as HTMLElement).style.setProperty("--e", r.e.toFixed(3));
       }
-      const live = r.e > 0.42;
+      const live = r.e > 0.5;
       if (live !== r.live) {
         r.live = live;
         if (live) r.el.setAttribute("data-live", "");
@@ -282,52 +296,74 @@ function drawTrail(now: number) {
   ctx.clearRect(0, 0, cw, ch);
   // Drop expired points.
   while (pts.length && now - pts[0].t > TRAIL_MS) pts.shift();
-  if (pts.length < 2) return;
+  const n = pts.length;
+  if (n < 2) return;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  const n = pts.length;
-  // Two passes: a soft blue halo, then a fine white-blue core. Each segment
-  // tapers with age, so the tail thins and fades out.
+  // Two passes: a soft blue halo, then a fine white-blue core. The path is a
+  // Catmull-Rom spline through the raw pointer samples, so it stays smooth at
+  // any speed; each segment tapers and fades with age.
   for (let pass = 0; pass < 2; pass++) {
-    for (let i = 1; i < n; i++) {
-      const a = pts[i - 1];
-      const b = pts[i];
-      const life = Math.max(0, 1 - (now - b.t) / TRAIL_MS);
-      const pos = i / (n - 1);
-      const k = life * life * (0.25 + 0.75 * pos);
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = pts[i - 1] ?? pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] ?? p2;
+      const age = (now - p2.t) / TRAIL_MS;
+      const life = Math.max(0, 1 - age);
+      const pos = (i + 1) / (n - 1);
+      // Ease-out fade: the newest part is crisp, the tail dissolves.
+      const k = life * life * (0.3 + 0.7 * pos);
       if (k < 0.01) continue;
-      const speed = Math.min(1, b.v / 1.6);
-      // Smooth curve through segment midpoints.
-      const m0x = i > 1 ? (pts[i - 2].x + a.x) / 2 : a.x;
-      const m0y = i > 1 ? (pts[i - 2].y + a.y) / 2 : a.y;
-      const m1x = (a.x + b.x) / 2;
-      const m1y = (a.y + b.y) / 2;
+      const speed = Math.min(1, p2.v / 1.4);
       ctx.beginPath();
-      ctx.moveTo(m0x, m0y);
-      ctx.quadraticCurveTo(a.x, a.y, m1x, m1y);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(
+        p1.x + (p2.x - p0.x) / 6,
+        p1.y + (p2.y - p0.y) / 6,
+        p2.x - (p3.x - p1.x) / 6,
+        p2.y - (p3.y - p1.y) / 6,
+        p2.x,
+        p2.y,
+      );
       if (pass === 0) {
-        ctx.strokeStyle = `rgba(54, 123, 250, ${(0.16 * k * (0.5 + speed)).toFixed(3)})`;
-        ctx.lineWidth = 7 * k + 1;
+        ctx.strokeStyle = `rgba(54,123,250,${(0.18 * k * (0.45 + speed)).toFixed(3)})`;
+        ctx.lineWidth = 1 + 7 * k;
       } else {
-        ctx.strokeStyle = `rgba(${Math.round(150 + 90 * pos)}, ${Math.round(190 + 55 * pos)}, 255, ${(0.85 * k).toFixed(3)})`;
-        ctx.lineWidth = 0.6 + 1.3 * k;
+        ctx.strokeStyle = `rgba(${150 + ((90 * pos) | 0)},${190 + ((55 * pos) | 0)},255,${(0.9 * k).toFixed(3)})`;
+        ctx.lineWidth = 0.6 + 1.4 * k;
       }
       ctx.stroke();
     }
   }
-  // Leading point: a small, bright filament tip.
+  // Leading point: a small, bright filament tip, exactly at the pointer.
   const tip = pts[n - 1];
   const life = Math.max(0, 1 - (now - tip.t) / TRAIL_MS);
   if (life > 0.02) {
-    const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 9);
-    g.addColorStop(0, `rgba(235, 243, 255, ${(0.95 * life).toFixed(3)})`);
-    g.addColorStop(0.35, `rgba(120, 170, 255, ${(0.35 * life).toFixed(3)})`);
-    g.addColorStop(1, "rgba(54, 123, 250, 0)");
+    const g = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 9);
+    g.addColorStop(0, `rgba(235,243,255,${(0.95 * life).toFixed(3)})`);
+    g.addColorStop(0.35, `rgba(120,170,255,${(0.35 * life).toFixed(3)})`);
+    g.addColorStop(1, "rgba(54,123,250,0)");
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(hx, hy, 9, 0, Math.PI * 2);
+    ctx.arc(tip.x, tip.y, 9, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+/** Add a raw pointer sample (client coords, event time). */
+function addPoint(x: number, y: number, t: number) {
+  const last = pts[pts.length - 1];
+  if (last) {
+    const d = Math.hypot(x - last.x, y - last.y);
+    if (d < 1.5) return;
+    const v = d / Math.max(1, t - last.t);
+    // Smooth the speed estimate a little so intensity doesn't flicker.
+    pts.push({ x, y, t, v: last.v * 0.6 + v * 0.4 });
+  } else {
+    pts.push({ x, y, t, v: 0 });
+  }
+  if (pts.length > MAX_PTS) pts.shift();
 }
 
 function frame(now: number) {
@@ -338,18 +374,6 @@ function frame(now: number) {
 
   let moving = false;
   if (trailOn) {
-    // Damped follower: inertia without lag that feels heavy.
-    const k = hasPointer ? 1 - Math.exp(-dt * FOLLOW) : 0;
-    const ox = hx;
-    const oy = hy;
-    hx += (px - hx) * k;
-    hy += (py - hy) * k;
-    const dist = Math.hypot(hx - ox, hy - oy);
-    if (dist > 0.15) {
-      pts.push({ x: hx, y: hy, t: now, v: dist / Math.max(1, dt * 1000) });
-      if (pts.length > MAX_PTS) pts.shift();
-      moving = true;
-    }
     drawTrail(now);
     if (pts.length > 1) moving = true;
   }
@@ -369,12 +393,27 @@ function frame(now: number) {
     }
   }
 
+  let painting = false;
+  if (painters.size) {
+    const state: PaintState = {
+      now,
+      dt,
+      tx: trailOn ? (sx / window.innerWidth) * 2 - 1 : 0,
+      ty: trailOn ? (sy / window.innerHeight) * 2 - 1 : 0,
+      trail: pts,
+      trailMs: TRAIL_MS,
+      interactive: trailOn,
+      reduced,
+    };
+    for (const p of painters) if (p(state)) painting = true;
+  }
+
   if (scrolled) updateSpine();
   const wasScrolled = scrolled;
   scrolled = false;
   const energised = reduced ? false : react(dt);
 
-  if (moving || settling || energised || wasScrolled) request();
+  if (moving || settling || energised || painting || wasScrolled) request();
   else last = 0;
 }
 
@@ -393,26 +432,25 @@ function start() {
     scrolled = true;
     request();
   };
-  px = sx = hx = window.innerWidth * 0.62;
-  py = sy = hy = window.innerHeight * 0.42;
+  px = sx = window.innerWidth * 0.62;
+  py = sy = window.innerHeight * 0.42;
   window.addEventListener(
     "pointermove",
     (e) => {
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
       px = e.clientX;
       py = e.clientY;
-      if (!hasPointer) {
-        hasPointer = true;
-        hx = px;
-        hy = py;
+      if (trailOn) {
+        // Every intermediate sample the browser delivered since the last
+        // event, so fast movements stay smooth curves instead of chords.
+        const list = e.getCoalescedEvents?.() ?? [];
+        if (list.length) for (const c of list) addPoint(c.clientX, c.clientY, c.timeStamp);
+        else addPoint(px, py, e.timeStamp);
       }
       request();
     },
     { passive: true },
   );
-  document.addEventListener("pointerleave", () => {
-    hasPointer = false;
-  });
   window.addEventListener(
     "scroll",
     () => {
@@ -501,5 +539,20 @@ export function spineChanged(top: number) {
   if (spine) spine.top = top;
   layoutDirty = true;
   scrolled = true;
+  request();
+}
+
+/** Register a canvas painter on the shared frame; returns the cleanup function. */
+export function registerPainter(p: Painter) {
+  start();
+  painters.add(p);
+  request();
+  return () => {
+    painters.delete(p);
+  };
+}
+
+/** Ask for a frame (e.g. after a painter's canvas was resized). */
+export function wake() {
   request();
 }

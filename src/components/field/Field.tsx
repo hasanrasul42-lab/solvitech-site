@@ -112,6 +112,7 @@ export function Lines({
           range["--from"] = s.range[0];
           range["--to"] = s.range[1];
         }
+        if (s.delay !== undefined) range["--delay"] = `${s.delay}ms`;
         const base = (
           <path
             d={s.d}
@@ -128,7 +129,9 @@ export function Lines({
           />
         );
         if (s.react === false || s.fill) return <g key={i}>{base}</g>;
-        const lift: Vars | undefined = s.lift ? { "--lift": `${s.lift}px` } : undefined;
+        // Each shape pulses on its own phase, so neighbours never fire in step.
+        const lift: Vars = { "--pd": `${-((i * 397) % 1500)}ms` };
+        if (s.lift) lift["--lift"] = `${s.lift}px`;
         return (
           <g key={i} data-react="" className={s.lift ? "fld-r fld-lift" : "fld-r"} transform={s.transform} style={lift}>
             {base}
