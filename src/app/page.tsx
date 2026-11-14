@@ -1,6 +1,6 @@
 import HomeEntrance from "@/components/home/entrance/HomeEntrance";
 import HeroBackdrop from "@/components/home/HeroBackdrop";
-import PathFlow from "@/components/home/PathFlow";
+import StructureReveal from "@/components/home/StructureReveal";
 import { INTRO_BOOT_SCRIPT } from "@/components/home/entrance/introTimeline";
 import HomeApproach from "@/components/home/HomeApproach";
 import HomeContact from "@/components/home/HomeContact";
@@ -12,9 +12,6 @@ import SiteFooter from "@/components/site/SiteFooter";
 import SiteHeader from "@/components/site/SiteHeader";
 import { SITE } from "@/config/site";
 import type { Metadata } from "next";
-
-/** Chooses the chapter background option from ?bg=fixed|path before first paint. */
-const BG_SCRIPT = `(function(){try{var b=new URLSearchParams(location.search).get("bg");if(b==="path"||b==="fixed")document.documentElement.setAttribute("data-bg",b)}catch(e){}})()`;
 
 export const metadata: Metadata = SITE.url ? { alternates: { canonical: "/" } } : {};
 
@@ -39,11 +36,8 @@ export default function Home() {
       {/* Chapters share one stacking context, so each chapter's fixed
           background can extend softly past its edges; clip only sideways. */}
       <main id="main" className="relative isolate flex-1 overflow-x-clip">
-        {/* Chapter backgrounds: fixed per chapter (default, chapters.css) or
-            one planned pathway (?bg=path). Both are kept while one is chosen. */}
-        <script dangerouslySetInnerHTML={{ __html: BG_SCRIPT }} />
-        <PathFlow />
         <HeroBackdrop />
+        <StructureReveal />
         <HomeEntrance />
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
         <HomeSolutions />

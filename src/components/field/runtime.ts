@@ -69,6 +69,12 @@ let layoutDirty = true;
 const pts: TrailPoint[] = [];
 const TRAIL_MS = 560;
 const MAX_PTS = 96;
+/**
+ * Whether the visible cursor streak is drawn. When false, pointer samples are
+ * still collected, so the hero lines and other responses keep reacting to the
+ * cursor; only the streak itself is hidden.
+ */
+const SHOW_TRAIL = true;
 const PARALLAX = 9;
 const REACH = 150; // px: how far the trail's influence extends
 
@@ -208,6 +214,10 @@ function react(dt: number): boolean {
 }
 
 function drawTrail(now: number) {
+  if (!SHOW_TRAIL) {
+    while (pts.length && now - pts[0].t > TRAIL_MS) pts.shift();
+    return;
+  }
   if (!ctx) return;
   ctx.clearRect(0, 0, cw, ch);
   // Drop expired points.
@@ -340,7 +350,7 @@ function start() {
   const update = () => {
     reduced = rm.matches;
     trailOn = fine.matches && !reduced;
-    if (trailOn) ensureCanvas();
+    if (trailOn && SHOW_TRAIL) ensureCanvas();
     if (canvas) canvas.style.display = trailOn ? "" : "none";
     if (!trailOn) pts.length = 0;
     for (const f of fields) f.el.dataset.pointer = trailOn ? "on" : "off";

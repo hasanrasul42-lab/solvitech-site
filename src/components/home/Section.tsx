@@ -32,6 +32,7 @@ export function Section({
     <section
       id={id}
       data-chapter={id}
+      data-sr-section={seamless ? "" : undefined}
       aria-labelledby={`${id}-title`}
       className={`relative ${seamless ? "" : `isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"}`} ${anchorOffset} ${className}`}
     >

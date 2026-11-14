@@ -11,11 +11,7 @@ import { Eyebrow, Section, SectionTitle } from "./Section";
  */
 export default function HomeWorkingTogether() {
   return (
-    <Section
-      id="working-together"
-      seamless
-      field={<div aria-hidden className="bga bga-surface" />}
-    >
+    <Section id="working-together" seamless field={<div aria-hidden className="sr sr-dots -z-10" />}>
       <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
         <div className="lg:col-span-7">
           <Eyebrow>{WORKING.eyebrow}</Eyebrow>

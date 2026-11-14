@@ -20,9 +20,12 @@ export default function HomeSolutions() {
     <section
       id="solutions"
       data-chapter="solutions"
+      data-sr-section=""
       aria-labelledby="solutions-title"
       className={`relative ${anchorOffset}`}
     >
+      {/* Revealed around the cursor only (StructureReveal). */}
+      <div aria-hidden className="sr sr-dots -z-10" />
       <div className={`mx-auto w-full max-w-[1440px] pb-20 pt-16 md:pb-28 md:pt-24 lg:pb-32 lg:pt-28 ${gutter}`}>
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">

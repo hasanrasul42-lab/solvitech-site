@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ReactZone } from "@/components/field/FieldRoot";
 import { CORE_SERVICES } from "@/config/services";
-import "./chapters.css";
 
 const QUADRANTS = ["tl", "tr", "bl", "br"] as const;
 
@@ -17,9 +16,6 @@ export default function ServiceMap() {
     <ReactZone className="svc-map relative">
       {/* Axes and centre (md+): behind the regions, visible in the gaps. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden md:block">
-        {/* Background (option A): the axes reach the chapter's edges. */}
-        <span className="bga bga-axis-h -z-10" />
-        <span className="bga bga-axis-v -z-10" />
         <span className="svc-ax svc-ax-l" />
         <span className="svc-ax svc-ax-r" />
         <span className="svc-ax svc-ax-t" />
@@ -33,8 +29,9 @@ export default function ServiceMap() {
             <Link
               href={s.href}
               data-react=""
-              className="rx rx-panel group relative flex h-full flex-col rounded-[22px] border border-white/[0.07] bg-[#0b111d]/[0.92] p-6 transition-[border-color,background-color] duration-300 ease-[var(--ease-precise)] hover:border-accent/35 hover:bg-[#0d1424] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft sm:p-8 lg:p-10"
+              className="rx rx-panel group relative isolate flex h-full flex-col rounded-[22px] border border-white/[0.07] bg-[#0b111d]/[0.92] p-6 transition-[border-color,background-color] duration-300 ease-[var(--ease-precise)] hover:border-accent/35 hover:bg-[#0d1424] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft sm:p-8 lg:p-10"
             >
+              <span aria-hidden className="sr sr-panel sr-dots" />
               {/* Edge light along the side that faces the centre. */}
               <span aria-hidden className="svc-edge" />
               <span aria-hidden className="font-mono text-xs text-accent-soft">

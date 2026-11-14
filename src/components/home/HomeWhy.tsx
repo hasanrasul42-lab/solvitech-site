@@ -12,15 +12,9 @@ export default function HomeWhy() {
     <Section
       id="why"
       seamless
+      field={<div aria-hidden className="sr sr-dots -z-10" />}
     >
       <div className="relative grid gap-12 lg:grid-cols-12 lg:gap-16">
-        {/* Background (option A): guide lines on the column grid and a quiet light. */}
-        <div aria-hidden className="bga bga-why-light" />
-        <div aria-hidden className="bga bga-why max-lg:hidden">
-          <span className="bga-guide left-0" />
-          <span className="bga-guide bga-guide-mid" />
-          <span className="bga-guide right-0" />
-        </div>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-[calc(var(--header-height)+3rem)]">
             <Eyebrow>{WHY.eyebrow}</Eyebrow>
