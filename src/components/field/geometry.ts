@@ -82,30 +82,6 @@ export const HERO_FLOW: Shape[] = [
   ]),
 ];
 
-// --- Hero to Solutions: light and lines flowing out from beneath the mark -------------
-
-export const HANDOFF: Shape[] = Array.from({ length: 7 }, (_, i): Shape => {
-  // A bundle that leaves from under the mark (top right), passes between the
-  // headline and the intro, and converges where the service map's axis starts.
-  const x0 = 930 + i * 34;
-  const c1 = 820 + i * 10;
-  const c2y = 120 + i * 8;
-  return {
-    d: `M${x0} -20 C${c1} ${40 + i * 4} ${724} ${c2y} 720 340`,
-    ink: i === 3 ? "blue" : i % 2 ? "soft" : "faint",
-    width: i === 3 ? 1.25 : 1,
-    range: [`entry ${i * 2}%`, `cover ${30 + i * 3}%`],
-  };
-});
-
-// --- Solutions: concentric precision arcs rising behind the service map ----------------
-
-export const SOLUTIONS_ARCS: Shape[] = [420, 540, 660, 800, 960].map((r, i) => ({
-  d: arc(720, 1060, r, 196 + i * 2, 344 - i * 2),
-  ink: i === 2 ? "blue" : i % 2 ? "soft" : "faint",
-  range: [`entry ${i * 4}%`, `cover ${40 + i * 4}%`] as [string, string],
-}));
-
 // --- Why / About: the ribbon outline at architectural scale ---------------------------
 
 export const ribbonContour = (transform: string, echo = false): Shape[] => [

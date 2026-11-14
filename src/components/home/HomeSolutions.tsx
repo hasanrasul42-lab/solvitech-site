@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Field, Glow, Layer, Lines } from "@/components/field/Field";
-import { HANDOFF, SOLUTIONS_ARCS } from "@/components/field/geometry";
 import { SOLUTIONS_CLOSING, SOLUTIONS_INTRO, SUPPORTING, SUPPORTING_LABEL } from "@/config/solutions";
 import ServiceMap from "./ServiceMap";
 
@@ -25,27 +23,10 @@ export default function HomeSolutions() {
       aria-labelledby="solutions-title"
       className={`relative ${anchorOffset}`}
     >
-      {/* Handoff from the hero: its light continues into the chapter and a
-          bundle of precise lines leaves from under the mark, converging where
-          the spine becomes the service map's axis. Lines respond to the trail. */}
-      <Field rest={["68%", "8%"]} className="-top-24 bottom-auto h-[64rem] [mask-image:linear-gradient(to_bottom,transparent,#000_10rem,#000_80%,transparent)]">
-        <Glow x="68%" y="20rem" w="min(80rem,150vw)" h="34rem" alpha={0.08} follow={28} />
-        <Layer depth={6} className="max-md:hidden">
-          <Lines shapes={HANDOFF} fit="xMidYMin slice" />
-        </Layer>
-      </Field>
-      {/* Precision arcs rising behind the service map, bleeding into Why. */}
-      <Field rest={["50%", "60%"]} className={`top-[26rem] bottom-[-16rem] max-md:hidden [mask-image:linear-gradient(to_bottom,transparent,#000_16rem,#000_calc(100%-16rem),transparent)]`}>
-        <Glow x="50%" y="40%" w="74rem" h="40rem" alpha={0.05} follow={20} />
-        <Layer depth={18}>
-          <Lines shapes={SOLUTIONS_ARCS} />
-        </Layer>
-      </Field>
-
       <div className={`mx-auto w-full max-w-[1440px] pb-20 pt-16 md:pb-28 md:pt-24 lg:pb-32 lg:pt-28 ${gutter}`}>
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">
-            <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-subtle sm:tracking-[0.22em]">
+            <p data-eyebrow="" className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-subtle sm:tracking-[0.22em]">
               <span aria-hidden className="h-px w-6 bg-accent" />
               {SOLUTIONS_INTRO.eyebrow}
             </p>

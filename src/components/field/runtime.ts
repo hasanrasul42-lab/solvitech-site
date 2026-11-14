@@ -10,35 +10,25 @@
  *     trail and the tail dissolves on its own.
  *  2. Environmental response: geometry marked `data-react` (inside registered
  *     fields) samples its own shape into page coordinates once per layout. Each
- *     frame, elements near the trail -- or near the homepage spine's head --
- *     gain energy (`--e`, 0..1) that decays smoothly; CSS turns energy into
+ *     frame, elements near the trail gain energy (`--e`, 0..1) that decays smoothly; CSS turns energy into
  *     light, activation and small movements. Strong energy sets `data-live`,
  *     which sends a pulse along the path.
- *  3. The homepage spine: one continuous path through every chapter (built by
- *     HomeSpine from the real layout). Its lit portion and luminous head follow
- *     the scroll position, so the path carries on through section boundaries.
+ *  3. Canvas painters (registerPainter): the hero flow and the homepage's
+ *     continuous flow draw on this same frame, with the trail, damped pointer
+ *     and timing passed in, so the whole site runs one loop.
  *
  * Fields also receive --tx/--ty (damped pointer, -1..1) for their depth layers.
  *
  * The loop only runs while something is moving (pointer, trail decay, energy
  * decay, scroll) and stops when the tab is hidden. Nothing here reads layout on
  * pointer moves: rects are measured on scroll/resize only. Touch devices get no
- * trail (no cursor) but keep the spine and its scroll-driven responses. With
- * reduced motion, nothing animates: the spine is drawn complete and still.
+ * trail (no cursor) but keep the scroll-driven drawing. With reduced motion,
+ * nothing animates: everything is drawn complete and still.
  */
 
 type Sample = { x: number; y: number };
 type Reactive = { el: Element; pts: Sample[]; e: number; live: boolean; chain: Element | null };
 type Field = { el: HTMLElement; visible: boolean; reactive: Reactive[] };
-type Spine = {
-  el: SVGSVGElement;
-  lit: SVGPathElement;
-  glow: SVGPathElement;
-  head: SVGGElement;
-  /** page-y -> fraction of path length, sampled along the path. */
-  table: { y: number; f: number; x: number; py: number }[];
-  top: number;
-};
 
 /** A trail point: client coords, time (ms), speed (px/ms). */
 export type TrailPoint = { x: number; y: number; t: number; v: number };
@@ -58,7 +48,6 @@ type Painter = (s: PaintState) => boolean;
 
 const painters = new Set<Painter>();
 const fields = new Set<Field>();
-let spine: Spine | null = null;
 let observer: IntersectionObserver | null = null;
 let started = false;
 let trailOn = false;
@@ -82,14 +71,12 @@ const TRAIL_MS = 560;
 const MAX_PTS = 96;
 const PARALLAX = 9;
 const REACH = 150; // px: how far the trail's influence extends
-const SPINE_REACH = 210;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let dpr = 1;
 let cw = 0;
 let ch = 0;
-let spineHead: { x: number; y: number } | null = null;
 
 // ---------------------------------------------------------------------------
 
@@ -162,82 +149,12 @@ function measure() {
       r.pts = out;
     }
   }
-  if (spine) buildSpineTable(spine);
 }
 
-function buildSpineTable(s: Spine) {
-  const path = s.lit;
-  const m = path.getScreenCTM();
-  if (!m) return;
-  let len = 0;
-  try {
-    len = path.getTotalLength();
-  } catch {
-    return;
-  }
-  const n = 240;
-  const table: Spine["table"] = [];
-  let maxY = -Infinity;
-  for (let i = 0; i <= n; i++) {
-    const p = path.getPointAtLength((len * i) / n);
-    const y = m.b * p.x + m.d * p.y + m.f + window.scrollY;
-    const x = m.a * p.x + m.c * p.y + m.e;
-    // Keep the table monotonic in y (the spine runs downwards overall).
-    maxY = Math.max(maxY, y);
-    table.push({ y: maxY, f: i / n, x, py: y });
-  }
-  s.table = table;
-}
-
-function spineFraction(s: Spine, y: number) {
-  const t = s.table;
-  if (!t.length) return 1;
-  if (y <= t[0].y) return 0;
-  for (let i = 1; i < t.length; i++) {
-    if (t[i].y >= y) {
-      const a = t[i - 1];
-      const b = t[i];
-      const k = b.y === a.y ? 1 : (y - a.y) / (b.y - a.y);
-      return a.f + (b.f - a.f) * k;
-    }
-  }
-  return 1;
-}
-
-function updateSpine() {
-  if (!spine) {
-    spineHead = null;
-    return;
-  }
-  const s = spine;
-  if (reduced) {
-    s.lit.style.strokeDashoffset = "0";
-    s.glow.style.opacity = "0";
-    s.head.style.opacity = "0";
-    spineHead = null;
-    return;
-  }
-  // The lit path reaches 62% down the viewport.
-  const reachY = window.scrollY + window.innerHeight * 0.62;
-  const f = spineFraction(s, reachY);
-  s.lit.style.strokeDashoffset = (1 - f).toFixed(4);
-  s.glow.style.strokeDashoffset = (0.045 - f).toFixed(4);
-  // Head position: interpolate the sampled point at fraction f.
-  const t = s.table;
-  const i = Math.min(t.length - 1, Math.max(0, Math.round(f * (t.length - 1))));
-  const pt = t[i];
-  if (!pt) return;
-  const visible = f > 0.002 && f < 0.998;
-  s.head.style.opacity = visible ? "1" : "0";
-  s.glow.style.opacity = visible ? "1" : "0";
-  s.head.style.transform = `translate(${pt.x.toFixed(1)}px, ${(pt.py - s.top).toFixed(1)}px)`;
-  spineHead = visible ? { x: pt.x, y: pt.py } : null;
-}
-
-/** Energise reactive geometry near the trail and the spine head. */
+/** Energise reactive geometry near the trail. */
 function react(dt: number): boolean {
   const scrollY = window.scrollY;
-  // Sources in page coords: the newest trail points (sparse) and the spine head.
+  // Sources in page coords: the newest trail points (sparse).
   const src: { x: number; y: number; w: number; r: number }[] = [];
   const now = performance.now();
   for (let i = pts.length - 1; i >= 0 && src.length < 6; i -= 3) {
@@ -246,7 +163,6 @@ function react(dt: number): boolean {
     if (life <= 0) break;
     src.push({ x: p.x, y: p.y + scrollY, w: life * Math.min(1, 0.35 + p.v / 1.4), r: REACH });
   }
-  if (spineHead) src.push({ x: spineHead.x, y: spineHead.y, w: 0.6, r: SPINE_REACH });
 
   let active = false;
   const up = 1 - Math.exp(-dt * 40);
@@ -408,7 +324,6 @@ function frame(now: number) {
     for (const p of painters) if (p(state)) painting = true;
   }
 
-  if (scrolled) updateSpine();
   const wasScrolled = scrolled;
   scrolled = false;
   const energised = reduced ? false : react(dt);
@@ -520,26 +435,6 @@ export function registerField(el: HTMLElement) {
     observer?.unobserve(el);
     fields.delete(f);
   };
-}
-
-/** Register the homepage spine (see HomeSpine); call again after rebuilding its path. */
-export function registerSpine(s: Omit<Spine, "table">) {
-  start();
-  spine = { ...s, table: [] };
-  layoutDirty = true;
-  scrolled = true;
-  request();
-  return () => {
-    if (spine?.el === s.el) spine = null;
-  };
-}
-
-/** The spine's path changed (relayout). */
-export function spineChanged(top: number) {
-  if (spine) spine.top = top;
-  layoutDirty = true;
-  scrolled = true;
-  request();
 }
 
 /** Register a canvas painter on the shared frame; returns the cleanup function. */

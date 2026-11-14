@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Field, Glow, Layer, Lines } from "@/components/field/Field";
-import { ribbonContour } from "@/components/field/geometry";
 import { PRINCIPLES, WHY } from "@/config/home";
 import { Eyebrow, Section, SectionTitle, textLink } from "./Section";
 
@@ -14,19 +12,15 @@ export default function HomeWhy() {
     <Section
       id="why"
       seamless
-      field={
-        <Field rest={["78%", "40%"]} className={`-top-48 bottom-0 [mask-image:linear-gradient(to_bottom,transparent,#000_16rem,#000_calc(100%-16rem),transparent)]`}>
-          <Glow x="82%" y="45%" w="56rem" h="44rem" alpha={0.06} follow={24} />
-          <Layer depth={22} className="max-md:hidden">
-            <Lines shapes={ribbonContour("translate(1010 -60) scale(1.9)", true)} fit="xMaxYMid slice" />
-          </Layer>
-          <Layer depth={12} className="max-md:hidden">
-            <Lines shapes={ribbonContour("translate(1060 40) scale(1.6)")} fit="xMaxYMid slice" />
-          </Layer>
-        </Field>
-      }
     >
-      <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div className="relative grid gap-12 lg:grid-cols-12 lg:gap-16">
+        {/* Background (option A): guide lines on the column grid and a quiet light. */}
+        <div aria-hidden className="bga bga-why-light" />
+        <div aria-hidden className="bga bga-why max-lg:hidden">
+          <span className="bga-guide left-0" />
+          <span className="bga-guide bga-guide-mid" />
+          <span className="bga-guide right-0" />
+        </div>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-[calc(var(--header-height)+3rem)]">
             <Eyebrow>{WHY.eyebrow}</Eyebrow>

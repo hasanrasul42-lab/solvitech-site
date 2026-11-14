@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Field, Glow, Layer, Lines } from "@/components/field/Field";
-import { CALM_RULES } from "@/components/field/geometry";
 import { WORKING } from "@/config/home";
 import { WORKING_PAGE } from "@/config/pages";
 import { secondaryBtn } from "@/components/solutions/shared";
@@ -16,15 +14,7 @@ export default function HomeWorkingTogether() {
     <Section
       id="working-together"
       seamless
-      field={
-        <Field rest={["70%", "70%"]} className={`-inset-y-40 [mask-image:linear-gradient(to_bottom,transparent,#000_16rem,#000_calc(100%-16rem),transparent)]`}>
-          <Glow x="50%" y="50%" w="110rem" h="40rem" alpha={0.05} color="64 96 160" />
-          <Glow x="75%" y="70%" w="60rem" h="34rem" alpha={0.05} follow={16} color="var(--fld-ice)" />
-          <Layer depth={8} className="[mask-image:linear-gradient(to_right,transparent,#000_30%)]">
-            <Lines shapes={CALM_RULES} fit="xMaxYMax slice" />
-          </Layer>
-        </Field>
-      }
+      field={<div aria-hidden className="bga bga-surface" />}
     >
       <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
         <div className="lg:col-span-7">

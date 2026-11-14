@@ -1,10 +1,10 @@
 import HomeEntrance from "@/components/home/entrance/HomeEntrance";
 import HeroBackdrop from "@/components/home/HeroBackdrop";
+import PathFlow from "@/components/home/PathFlow";
 import { INTRO_BOOT_SCRIPT } from "@/components/home/entrance/introTimeline";
 import HomeApproach from "@/components/home/HomeApproach";
 import HomeContact from "@/components/home/HomeContact";
 import HomeSolutions from "@/components/home/HomeSolutions";
-import HomeSpine from "@/components/home/HomeSpine";
 import HomeWhy from "@/components/home/HomeWhy";
 import HomeWork from "@/components/home/HomeWork";
 import HomeWorkingTogether from "@/components/home/HomeWorkingTogether";
@@ -12,6 +12,9 @@ import SiteFooter from "@/components/site/SiteFooter";
 import SiteHeader from "@/components/site/SiteHeader";
 import { SITE } from "@/config/site";
 import type { Metadata } from "next";
+
+/** Chooses the chapter background option from ?bg=fixed|path before first paint. */
+const BG_SCRIPT = `(function(){try{var b=new URLSearchParams(location.search).get("bg");if(b==="path"||b==="fixed")document.documentElement.setAttribute("data-bg",b)}catch(e){}})()`;
 
 export const metadata: Metadata = SITE.url ? { alternates: { canonical: "/" } } : {};
 
@@ -33,10 +36,13 @@ export default function Home() {
         Skip to content
       </a>
       <SiteHeader />
-      {/* One environment: chapters share a stacking context, so their fields and
-          the spine run across section boundaries; clip only sideways. */}
+      {/* Chapters share one stacking context, so each chapter's fixed
+          background can extend softly past its edges; clip only sideways. */}
       <main id="main" className="relative isolate flex-1 overflow-x-clip">
-        <HomeSpine />
+        {/* Chapter backgrounds: fixed per chapter (default, chapters.css) or
+            one planned pathway (?bg=path). Both are kept while one is chosen. */}
+        <script dangerouslySetInnerHTML={{ __html: BG_SCRIPT }} />
+        <PathFlow />
         <HeroBackdrop />
         <HomeEntrance />
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />

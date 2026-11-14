@@ -27,6 +27,8 @@ export default function HomeApproach() {
       <ReactZone>
       <ol className="relative mt-12 grid gap-8 md:mt-16 md:grid-cols-4 md:gap-0">
         {/* The route: a faint track, filled as the chapter scrolls (vertical on phones). */}
+        {/* Background (option A): a light beam along the route. */}
+        <span aria-hidden className="bga bga-beam hidden md:block" />
         <span aria-hidden className="absolute left-5 right-5 top-5 hidden h-px bg-white/[0.1] md:block" />
         <span aria-hidden className="prog-x absolute left-5 right-5 top-5 hidden h-px bg-gradient-to-r from-accent via-accent/70 to-accent-soft md:block" />
         <span aria-hidden className="absolute bottom-5 left-5 top-5 w-px bg-white/[0.1] md:hidden" />
@@ -35,6 +37,7 @@ export default function HomeApproach() {
           const outcome = APPROACH_PAGE.stages.find((d) => d.id === s.id)?.outcome;
           return (
             <li key={s.id} className="relative grid grid-cols-[2.5rem_1fr] gap-4 md:block md:pr-8">
+              <span aria-hidden className="bga bga-stage-guide hidden md:block" />
               <span
                 data-react=""
                 className="prog-node rx rx-node relative z-10 grid h-10 w-10 place-items-center rounded-full border border-accent/70 bg-background font-mono text-sm text-accent-soft"

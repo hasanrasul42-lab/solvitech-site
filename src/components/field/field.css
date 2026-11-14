@@ -331,50 +331,6 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Homepage spine (HomeSpine.tsx): the continuous course through the chapters.
-   --------------------------------------------------------------------------- */
-.spine-dormant {
-  stroke: rgb(var(--fld-ice) / 0.07);
-  stroke-width: 1px;
-}
-.spine-lit {
-  stroke: rgb(110 160 255 / 0.42);
-  stroke-width: 1.25px;
-  stroke-dasharray: 1 1;
-  stroke-dashoffset: 1;
-}
-.spine-glow {
-  stroke: rgb(200 222 255 / 0.9);
-  stroke-width: 1.75px;
-  stroke-linecap: round;
-  stroke-dasharray: 0.045 2;
-  opacity: 0;
-}
-.spine-head {
-  opacity: 0;
-  transition: opacity 400ms var(--ease-precise);
-}
-@media (prefers-reduced-motion: reduce) {
-  .spine-lit {
-    stroke-dashoffset: 0;
-  }
-}
-
-} /* @layer components */
-
-/* Content that responds to the trail (ReactZone): light along the edge. */
-.rx {
-  --e: 0;
-}
-.rx-panel {
-  box-shadow: inset 0 0 0 1px rgb(120 168 255 / calc(var(--e) * 0.5)), 0 0 calc(var(--e) * 40px) rgb(54 123 250 / calc(var(--e) * 0.12));
-}
-.rx-node {
-  box-shadow: 0 0 0 5px var(--node-ring, #080d17), 0 0 calc(16px + var(--e) * 26px) rgb(54 123 250 / calc(0.3 + var(--e) * 0.5));
-  border-color: rgb(var(--fld-blue) / calc(0.7 + var(--e) * 0.3));
-}
-
-/* ---------------------------------------------------------------------------
    Hero background (HeroBackdrop.tsx): its light waits for the System
    Activation intro to finish (the flow itself is drawn by HeroFlow.tsx).
    --------------------------------------------------------------------------- */
