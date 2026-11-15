@@ -77,6 +77,17 @@ export default function StructureReveal() {
       }
     };
 
+    // Warm-up: create every section's spot now (during the intro), so the
+    // first hover over a section never has to build DOM.
+    if (fine.matches && !reduced.matches) {
+      for (const el of document.querySelectorAll<HTMLElement>(".sr")) {
+        if (el.querySelector(":scope > .sr-spot")) continue;
+        const spot = document.createElement("div");
+        spot.className = "sr-spot";
+        el.appendChild(spot);
+      }
+    }
+
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
       if (!fine.matches || reduced.matches) return;

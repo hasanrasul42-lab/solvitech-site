@@ -3,6 +3,7 @@ import HeroBackdrop from "@/components/home/HeroBackdrop";
 import StructureReveal from "@/components/home/StructureReveal";
 import { INTRO_BOOT_SCRIPT } from "@/components/home/entrance/introTimeline";
 import HomeFind from "@/components/home/HomeFind";
+import HomeWarmup from "@/components/home/HomeWarmup";
 import HomeSolutions from "@/components/home/HomeSolutions";
 import HomeWork from "@/components/home/HomeWork";
 import { HomeAbout, HomeApproach, HomeContact, HomeWhy, HomeWorkingTogether } from "@/components/home/HomeCompany";
@@ -40,6 +41,8 @@ export default function Home() {
       <main id="main" className="relative isolate flex-1 overflow-x-clip">
         <HeroBackdrop />
         <StructureReveal />
+        {/* Prefetches every linked page while the intro plays. */}
+        <HomeWarmup />
         <HomeEntrance />
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
         <HomeFind />

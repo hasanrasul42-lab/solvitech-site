@@ -10,8 +10,8 @@ const noopSubscribe = () => () => {};
 const readBootStart = () => Number(document.documentElement.getAttribute("data-intro-start") ?? 0);
 
 const html = () => document.documentElement;
-/** End of the intro if it is playing, else 0 (read on the client). */
-const sceneAfterIntro = () => (html().getAttribute("data-intro") === "play" ? readBootStart() + INTRO.endMs : 0);
+/** Start the 3D straight away (during the intro). */
+const startNow = () => 0;
 
 /**
  * The activation light: the official silhouette (solvitech-mark.svg) masks a
@@ -74,7 +74,9 @@ export default function HomeEntrance() {
   useEffect(() => {
     const stage = document.querySelector(STAGE_SELECTOR);
     if (!stage) return;
-    const heldUntil = sceneAfterIntro();
+    // The scene is no longer held back by the intro (startNow), so its
+    // takeover time counts from navigation start.
+    const heldUntil = 0;
     const save = (readyMs: number | null) => {
       const record: Intro3dRecord = { readyMs, at: Date.now() };
       try {
@@ -112,9 +114,11 @@ export default function HomeEntrance() {
           // Cursor response blends in once the activation light has passed, so
           // the sweep always sits exactly on the resting silhouette.
           interactiveFrom: start + INTRO.sweepDelayMs + INTRO.sweepMs,
-          // While the intro plays the poster carries it; the 3D scene starts
-          // up afterwards so its set-up work cannot stall the intro.
-          sceneFrom: sceneAfterIntro,
+          // The 3D scene starts up during the intro, so its set-up work is
+          // done by the time the intro ends (the intro's animations run on
+          // the compositor and keep moving meanwhile; the stage carries poster
+          // or canvas alike).
+          sceneFrom: startNow,
           overlay: <ActivationSweep />,
           lighting: "refined",
         }}

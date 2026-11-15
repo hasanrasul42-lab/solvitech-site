@@ -14,11 +14,17 @@
  * Keep these in step with entrance.css.
  */
 /**
- * Whether the System Activation intro may play at all. Off: the hero shows
- * at once on every visit (the mark still plays its own arrival), so nothing
- * holds the page back while the 3D loads. Set true to bring the intro back.
+ * Whether the System Activation intro may play at all.
  */
-export const INTRO_ENABLED = false;
+export const INTRO_ENABLED = true;
+
+/**
+ * Play the intro on every fresh visit (not only when the 3D is predicted to
+ * be slow). The intro doubles as the loading phase: while it plays, the page
+ * warms up everything else (HomeWarmup.tsx), so scrolling, navigation and
+ * the 3D respond at once afterwards. Set false to play it only when needed.
+ */
+export const INTRO_EVERY_VISIT = true;
 
 export const INTRO = {
   /** Stage A: the mark fades in, centred, dormant (dimmed). */
@@ -83,7 +89,7 @@ export const INTRO_BOOT_SCRIPT = `(function () {
     var rec = null;
     try { rec = JSON.parse(localStorage.getItem(${JSON.stringify(INTRO_3D_KEY)}) || "null"); } catch (e) {}
     if (rec && !(Date.now() - rec.at < ${INTRO_RECORD_MAX_AGE_MS})) rec = null;
-    var fast = !!rec && (rec.readyMs === null || rec.readyMs <= ${INTRO_FAST_MS});
+    var fast = !${INTRO_EVERY_VISIT} && !!rec && (rec.readyMs === null || rec.readyMs <= ${INTRO_FAST_MS});
     var off = ${!INTRO_ENABLED};
     if (off || !stage || reduced || fast || window.scrollY > 0) {
       html.setAttribute("data-intro", "skip");

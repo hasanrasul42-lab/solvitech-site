@@ -8,9 +8,10 @@ import SceneErrorBoundary from "@/components/mark/SceneErrorBoundary";
  * The About section's backdrop: the Solvitech mark as a transparent 3D
  * outline that turns towards the cursor (AboutMarkScene.tsx).
  *
- * This wrapper imports no 3D code. The scene module (three.js, react-three-
- * fiber, drei) is fetched only when About comes within a screen of the
- * viewport, so it never weighs on the initial load. Until then, without
+ * This wrapper imports no 3D code, so the scene module (three.js, react-
+ * three-fiber, drei) never weighs on the initial bundle. It is fetched and
+ * drawn once straight after the page loads (during the intro), so it is
+ * ready, with its shaders compiled, before anyone scrolls to About. Without
  * WebGL, or on a render error, the flat mark shows very faintly.
  */
 
@@ -33,26 +34,16 @@ export default function AboutMark({ className = "" }: { className?: string }) {
   const offscreen = useOffscreen(ref);
   const [loaded, setLoaded] = useState<ComponentType<SceneProps> | null>(() => Scene);
 
-  // Fetch the scene once About is within a screen of the viewport.
+  // Fetch and draw the scene straight after load (during the intro).
   useEffect(() => {
-    const el = ref.current;
-    if (!el || !webgl || loaded) return;
+    if (!webgl || loaded) return;
     let cancelled = false;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        void import("./AboutMarkScene").then((mod) => {
-          Scene = mod.default;
-          if (!cancelled) setLoaded(() => mod.default);
-        });
-      },
-      { rootMargin: "100% 0px" },
-    );
-    io.observe(el);
+    void import("./AboutMarkScene").then((mod) => {
+      Scene = mod.default;
+      if (!cancelled) setLoaded(() => mod.default);
+    });
     return () => {
       cancelled = true;
-      io.disconnect();
     };
   }, [webgl, loaded]);
 
