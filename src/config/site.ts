@@ -16,7 +16,6 @@ export type ChapterId =
   | "hero"
   | "find"
   | "solutions"
-  | "more"
   | "work"
   | "about"
   | "why"
@@ -34,7 +33,6 @@ export const HOME_CHAPTERS: Chapter[] = [
   { id: "hero", title: "Engineering better business", live: true },
   { id: "find", title: "Find your solution", live: true },
   { id: "solutions", title: "What we do", live: true },
-  { id: "more", title: "Additional services", live: true },
   { id: "work", title: "Selected work", live: WORK_VISIBLE },
   { id: "about", title: "About Solvitech", live: true },
   { id: "why", title: "Why Solvitech", live: true },

@@ -48,7 +48,7 @@ export const ROUTES: Route[] = [
     title: "Build a website or online store",
     line: "Explore professional websites, redesigns and e-commerce.",
     href: "/solutions/websites",
-    cue: "Websites & E-commerce",
+    cue: "Websites, E-commerce & Growth",
   },
 ];
 
@@ -77,8 +77,6 @@ export interface Family {
   /** Coverage, as one list or as named groups. */
   coverage: { heading?: string; items: string[] }[];
   links: FamilyLink[];
-  /** A quieter related link (e.g. SEO next to Websites). */
-  related?: FamilyLink & { lead: string };
   /** Spoken description of the illustrative visual. */
   visualLabel: string;
 }
@@ -124,24 +122,18 @@ export const FAMILIES: Family[] = [
   {
     id: "websites",
     anchor: "websites",
-    title: "Websites & E-commerce",
-    kicker: "Make the right impression",
+    title: "Websites, E-commerce & Growth",
+    kicker: "Make the right impression, and be found",
     description:
-      "Professional business websites, online stores and tailored digital experiences designed to make the right impression and support your business goals.",
+      "Professional business websites, online stores and tailored digital experiences, plus the search visibility that helps the right customers find you.",
     coverage: [
-      {
-        items: [
-          "Business websites",
-          "Website redesigns",
-          "E-commerce",
-          "Bespoke digital experiences",
-          "Responsive design",
-          "Website development",
-        ],
-      },
+      { heading: "Websites & e-commerce", items: ["Business websites and redesigns", "E-commerce", "Bespoke digital experiences", "Responsive design and development"] },
+      { heading: "Digital growth", items: ["SEO and search visibility", "Conversion improvements", "Clear measurement"] },
     ],
-    links: [{ label: "Explore Websites & E-commerce", href: "/solutions/websites" }],
-    related: { lead: "Want more people to find it?", label: "SEO & Digital Growth", href: "/solutions/digital-growth" },
+    links: [
+      { label: "Explore Websites & E-commerce", href: "/solutions/websites" },
+      { label: "Explore SEO & Digital Growth", href: "/solutions/digital-growth" },
+    ],
     visualLabel:
       "Illustration: an original concept online store for a fictional ceramics brand, shown on a desktop browser and a phone.",
   },
@@ -163,17 +155,6 @@ export const FAMILIES: Family[] = [
       "Illustration: a bespoke jobs management application connected to a separate accounts application, with a completed job synced as an invoice.",
   },
 ];
-
-// --- 04 Additional Services --------------------------------------------------------------
-
-export const MORE = {
-  eyebrow: "Also available",
-  title: "SEO & Digital Growth",
-  line: "Search visibility, conversion improvements and clear measurement, so the right people find you and get in touch. Often paired with a new or redesigned website.",
-  href: "/solutions/digital-growth",
-  linkLabel: "Explore SEO & Digital Growth",
-  hub: { lead: "Every service in one place", label: "Browse all solutions", href: "/solutions" },
-};
 
 // --- 05 About Solvitech ----------------------------------------------------------------------
 

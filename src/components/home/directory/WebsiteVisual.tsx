@@ -4,7 +4,7 @@ import { useState, type CSSProperties } from "react";
 import Stage, { Layer } from "./Stage";
 
 /**
- * Websites & E-commerce: an original, clearly illustrative online store for a
+ * Websites, E-commerce & Growth: an original, clearly illustrative online store for a
  * fictional ceramics brand ("Northfold"), shown as a desktop browser and a
  * phone. A small toggle brings either presentation forward. Labelled as an
  * illustrative concept, never as client work.
