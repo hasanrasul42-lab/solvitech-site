@@ -75,11 +75,11 @@ body {
    HeroCopySync retimes these animations so the last line lands exactly as the
    mark does. */
 .hero-sync .hero-rise {
-  animation-duration: 1500ms;
+  animation-duration: 700ms;
 }
 
 .hero-sync .hero-fade {
-  animation-duration: 1800ms;
+  animation-duration: 900ms;
 }
 
 /* "Refined" ambient light (A/B candidate, HomeHero lighting="refined"): an

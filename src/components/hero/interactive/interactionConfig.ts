@@ -1,5 +1,19 @@
-import * as THREE from "three";
 import type { MoveId } from "./moves";
+
+/**
+ * A minimal 2D point (x, y, set). Used instead of THREE.Vector2 so this
+ * module, which loads with the page, does not pull three.js into the initial
+ * bundle. Only .x, .y and .set() are used on the pointer.
+ */
+export class Point2 {
+  x = 0;
+  y = 0;
+  set(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    return this;
+  }
+}
 
 /** Cursor response envelope (degrees / CSS px at the far edge of the viewport). */
 export interface ResponseStrength {
@@ -111,7 +125,7 @@ export const AMPLITUDE = {
  */
 export interface InteractionInput {
   /** Cursor offset from the logo centre, -1..1 (y down). */
-  pointer: THREE.Vector2;
+  pointer: Point2;
   dragging: boolean;
   /** Touch-drag preview yaw, radians. */
   dragYaw: number;
@@ -128,7 +142,7 @@ export interface InteractionInput {
 
 export function createInteractionInput(): InteractionInput {
   return {
-    pointer: new THREE.Vector2(),
+    pointer: new Point2(),
     dragging: false,
     dragYaw: 0,
     keyYaw: 0,

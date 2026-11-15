@@ -13,9 +13,8 @@ import {
 } from "@/config/home";
 import { APPROACH_PAGE, WORKING_PAGE } from "@/config/pages";
 import { CALL_CTA, ENQUIRY_CTA } from "@/config/site";
-import { secondaryBtn } from "@/components/solutions/shared";
 import { ReactZone } from "@/components/field/FieldRoot";
-import { Eyebrow, Section, SectionTitle, gutter, anchorOffset } from "./Section";
+import { Eyebrow, Section, SectionTitle, gutter, anchorOffset, solidBtn } from "./Section";
 import AboutMark from "./AboutMark";
 import ContactForm from "./ContactForm";
 import "./directory/directory.css";
@@ -54,7 +53,7 @@ export function HomeAbout() {
         </h2>
         <p className="mt-8 text-[1.1875rem] font-medium leading-[1.45] tracking-[-0.01em] text-foreground md:text-[1.375rem]">{ABOUT_HOME.statement}</p>
         <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted md:text-base">{ABOUT_HOME.body}</p>
-        <Link href={ABOUT_HOME.link.href} className={`${secondaryBtn} mt-9`}>
+        <Link href={ABOUT_HOME.link.href} className={`${solidBtn} mt-9`}>
           {ABOUT_HOME.link.label} <span aria-hidden>→</span>
         </Link>
       </div>
@@ -246,7 +245,7 @@ export function HomeApproach() {
 
       {APPROACH.page && (
         <div className="mt-12 md:mt-14">
-          <Link href={APPROACH.page} className={secondaryBtn}>
+          <Link href={APPROACH.page} className={solidBtn}>
             View Our Approach <span aria-hidden>→</span>
           </Link>
         </div>
@@ -386,7 +385,7 @@ export function HomeWorkingTogether() {
           <p className="max-w-[36rem] text-[0.9375rem] leading-relaxed text-muted">
             What shapes a quotation, what is agreed in writing and common questions are covered in detail.
           </p>
-          <Link href={WORKING.page} className={`${secondaryBtn} shrink-0`}>
+          <Link href={WORKING.page} className={`${solidBtn} shrink-0`}>
             How We Work Together <span aria-hidden>→</span>
           </Link>
         </div>
@@ -468,7 +467,7 @@ export function HomeContact() {
 
             {/* The enquiry form itself (honest about delivery: ContactForm). */}
             <div className="lg:col-span-7">
-              <div className="rounded-[24px] border border-white/[0.1] bg-[#070c16]/75 p-5 shadow-[0_40px_80px_-50px_rgb(0_0_0/0.9)] backdrop-blur-sm sm:p-8">
+              <div className="rounded-[24px] border border-white/[0.1] bg-[#070c16] p-5 shadow-[0_40px_80px_-50px_rgb(0_0_0/0.9)] sm:p-8">
                 <h3 className="text-[1.375rem] font-semibold tracking-[-0.02em] text-foreground">{ENQUIRY_CTA.label.replace(/^./, (c) => c.toUpperCase())}</h3>
                 <p className="mb-6 mt-1.5 text-[0.9375rem] text-muted">A few sentences is enough. It doesn’t need to be a finished brief.</p>
                 <ContactForm />

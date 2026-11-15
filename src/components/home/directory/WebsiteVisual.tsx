@@ -172,7 +172,7 @@ export default function WebsiteVisual({ label }: { label: string }) {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-[max(1.25rem,env(safe-area-inset-left))] sm:px-0">
         <p className="text-[0.8125rem] text-subtle">Illustrative concept, not client work.</p>
-        <div role="group" aria-label="Preview the concept on" className="inline-flex rounded-full border border-white/10 bg-white/[0.03] p-1">
+        <div role="group" aria-label="Preview the concept on" className="inline-flex rounded-full border border-white/10 bg-[var(--surface,#080d17)] p-1">
           {(["desktop", "mobile"] as const).map((v) => (
             <button
               key={v}

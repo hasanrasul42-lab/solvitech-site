@@ -13,6 +13,13 @@
  *
  * Keep these in step with entrance.css.
  */
+/**
+ * Whether the System Activation intro may play at all. Off: the hero shows
+ * at once on every visit (the mark still plays its own arrival), so nothing
+ * holds the page back while the 3D loads. Set true to bring the intro back.
+ */
+export const INTRO_ENABLED = false;
+
 export const INTRO = {
   /** Stage A: the mark fades in, centred, dormant (dimmed). */
   appearMs: 220,
@@ -77,9 +84,10 @@ export const INTRO_BOOT_SCRIPT = `(function () {
     try { rec = JSON.parse(localStorage.getItem(${JSON.stringify(INTRO_3D_KEY)}) || "null"); } catch (e) {}
     if (rec && !(Date.now() - rec.at < ${INTRO_RECORD_MAX_AGE_MS})) rec = null;
     var fast = !!rec && (rec.readyMs === null || rec.readyMs <= ${INTRO_FAST_MS});
-    if (!stage || reduced || fast || window.scrollY > 0) {
+    var off = ${!INTRO_ENABLED};
+    if (off || !stage || reduced || fast || window.scrollY > 0) {
       html.setAttribute("data-intro", "skip");
-      html.setAttribute("data-intro-reason", !stage ? "no-stage" : reduced ? "reduced-motion" : fast
+      html.setAttribute("data-intro-reason", off ? "intro disabled" : !stage ? "no-stage" : reduced ? "reduced-motion" : fast
         ? (rec.readyMs === null ? "no WebGL last visit" : "3D ready in " + Math.round(rec.readyMs) + " ms last visit")
         : "scrolled");
       return;

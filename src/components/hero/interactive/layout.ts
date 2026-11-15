@@ -1,5 +1,7 @@
-import * as THREE from "three";
-import { MARK_WORLD_HEIGHT, type MarkContours } from "../../mark/markGeometry";
+// No runtime three.js import: this module loads with the page (hero poster
+// layout), and the 3D engine should only arrive with the scene.
+import { MARK_WORLD_HEIGHT } from "../../mark/markConstants";
+import type { MarkContours } from "../../mark/markGeometry";
 
 /** Mark height as a fraction of the stage, unless the stage is narrow. */
 export const MARK_HEIGHT_FRACTION = 0.58;
@@ -18,11 +20,12 @@ export const FOV = 22;
  * reference under perspective.
  */
 export function fitMetrics(width: number, height: number, contours: MarkContours, silhouetteZ: number) {
-  const bounds = contours.bounds.getSize(new THREE.Vector2());
+  const { min, max } = contours.bounds;
+  const bounds = { x: max.x - min.x, y: max.y - min.y };
   const markPx = Math.min(height * MARK_HEIGHT_FRACTION, (width * MARK_MAX_WIDTH_FRACTION * bounds.y) / bounds.x);
   const visibleHeight = (MARK_WORLD_HEIGHT * height) / markPx;
   return {
-    distance: silhouetteZ + visibleHeight / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)),
+    distance: silhouetteZ + visibleHeight / 2 / Math.tan(((FOV / 2) * Math.PI) / 180),
     worldPerPx: visibleHeight / height,
   };
 }

@@ -28,7 +28,8 @@ export default function HeroCopySync({ targetId }: { targetId: string }) {
       );
       const wanted = endsAt - performance.now();
       if (remaining <= 0 || wanted <= 0) return;
-      const rate = Math.min(2.5, Math.max(0.4, remaining / wanted));
+      // Only ever speed the copy up to land with the mark; never hold it back.
+      const rate = Math.min(2.5, Math.max(1, remaining / wanted));
       animations.forEach((a) => a.updatePlaybackRate(rate));
     };
 

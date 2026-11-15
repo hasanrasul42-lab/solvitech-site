@@ -115,7 +115,7 @@ export default function SiteHeader() {
     open || solOpen
       ? "border-b border-hairline bg-[#080d17]"
       : scrolled
-        ? "border-b border-hairline bg-[#080d17]/80 backdrop-blur-md"
+        ? "border-b border-hairline bg-[#080d17]/95"
         : "border-b border-transparent";
 
   const ctaLink = NAV_CTA.external ? (

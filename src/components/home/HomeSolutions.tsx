@@ -65,7 +65,7 @@ export default function HomeSolutions() {
 }
 
 const linkBtn =
-  "group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-[0.9375rem] font-medium text-foreground transition-colors hover:border-white/35 hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft";
+  "group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-[var(--surface,#080d17)] px-5 text-[0.9375rem] font-medium text-foreground transition-colors hover:border-white/35 hover:bg-[color-mix(in_srgb,var(--surface,#080d17),white_6%)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft";
 
 function Visual({ family }: { family: Family }) {
   switch (family.id) {

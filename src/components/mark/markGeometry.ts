@@ -1,10 +1,9 @@
 import * as THREE from "three";
 import type { SVGResult } from "three/examples/jsm/loaders/SVGLoader.js";
 
-export const MARK_SVG_URL = "/brand/solvitech-mark.svg";
+import { MARK_WORLD_HEIGHT } from "./markConstants";
 
-/** World-space height of the combined mark. Everything else scales from this. */
-export const MARK_WORLD_HEIGHT = 3;
+export { MARK_SVG_URL, MARK_WORLD_HEIGHT } from "./markConstants";
 
 export type RibbonId = "white-ribbon" | "blue-ribbon";
 

@@ -68,6 +68,13 @@ export function BandEdge() {
   );
 }
 
+/**
+ * Homepage outlined button. Solid (the section's colour), so the cursor dot
+ * grid stays behind it; inner pages keep the shared secondaryBtn.
+ */
+export const solidBtn =
+  "group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-[var(--surface,#080d17)] px-6 text-[0.9375rem] font-medium text-foreground transition-colors hover:border-white/35 hover:bg-[color-mix(in_srgb,var(--surface,#080d17),white_6%)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft";
+
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <p data-eyebrow="" className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-subtle sm:tracking-[0.22em]">

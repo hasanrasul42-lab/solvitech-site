@@ -30,7 +30,7 @@ export default function HomeFind() {
           <li key={r.id} className="flex">
             <Link
               href={r.href}
-              className={`route acc-${r.id} flex w-full flex-col rounded-[22px] border border-white/[0.09] bg-white/[0.015] p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft sm:p-7`}
+              className={`route acc-${r.id} flex w-full flex-col rounded-[22px] border border-white/[0.09] p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent-soft sm:p-7`}
             >
               <span className="route-glyph block h-14 w-14">
                 <RouteGlyph id={r.id} />

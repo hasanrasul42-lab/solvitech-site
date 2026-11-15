@@ -12,6 +12,8 @@ import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
  * - At rest the composition holds its own angle (--rx0 / --ry0).
  * - A fine pointer over the service tilts it a few degrees (damped, animation
  *   frames only while it is settling: nothing runs at rest or off-screen).
+ *   The tilt is one inline transform on the scene, and the stage is measured
+ *   at most once per frame, so pointer moves stay cheap while scrolling.
  * - Hovering or focusing the service sets `data-on`, which brings its key
  *   layer forward (each visual decides what that is).
  * - Touch screens get the same emphasis while the visual is in view.
@@ -34,6 +36,7 @@ export default function Stage({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [rx0, ry0] = rest;
 
   useEffect(() => {
     const el = ref.current;
@@ -42,10 +45,19 @@ export default function Stage({
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+    // Performance: the tilt is written as one inline transform on the scene
+    // (and the floor), never as inherited CSS variables, so a frame restyles
+    // two elements rather than every layer. The stage is measured at most
+    // once per frame, never per pointer event.
+    const scene = el.querySelector<HTMLElement>(".s3d-scene");
+    const floor = el.querySelector<HTMLElement>(".s3d-floor");
     let tx = 0;
     let ty = 0;
     let x = 0;
     let y = 0;
+    let cx = 0;
+    let cy = 0;
+    let pending = false;
     let raf = 0;
     let last = 0;
     let hovered = false;
@@ -59,13 +71,19 @@ export default function Stage({
 
     const frame = (now: number) => {
       raf = 0;
+      if (pending) {
+        pending = false;
+        const r = el.getBoundingClientRect();
+        tx = Math.max(-1, Math.min(1, ((cx - r.left) / r.width) * 2 - 1));
+        ty = Math.max(-1, Math.min(1, ((cy - r.top) / r.height) * 2 - 1));
+      }
       const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60);
       last = now;
       const k = 1 - Math.exp(-dt * 7);
       x += (tx - x) * k;
       y += (ty - y) * k;
-      el.style.setProperty("--px", x.toFixed(4));
-      el.style.setProperty("--py", y.toFixed(4));
+      if (scene) scene.style.transform = `rotateX(${(rx0 - y * 4).toFixed(3)}deg) rotateY(${(ry0 + x * 6).toFixed(3)}deg)`;
+      if (floor) floor.style.transform = `translateX(${(-x * 1.2).toFixed(3)}em)`;
       if (Math.abs(tx - x) + Math.abs(ty - y) > 0.002) raf = requestAnimationFrame(frame);
       else last = 0;
     };
@@ -75,9 +93,9 @@ export default function Stage({
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse" || !fine.matches || reduced.matches) return;
-      const r = el.getBoundingClientRect();
-      tx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
-      ty = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+      cx = e.clientX;
+      cy = e.clientY;
+      pending = true;
       request();
     };
     const onEnter = (e: PointerEvent) => {
@@ -87,6 +105,7 @@ export default function Stage({
     };
     const onLeave = () => {
       hovered = false;
+      pending = false;
       tx = 0;
       ty = 0;
       request();
@@ -127,7 +146,7 @@ export default function Stage({
       fine.removeEventListener("change", sync);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [rx0, ry0]);
 
   return (
     <div
