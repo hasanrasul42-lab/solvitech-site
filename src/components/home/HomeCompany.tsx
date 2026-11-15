@@ -13,10 +13,11 @@ import {
 } from "@/config/home";
 import { APPROACH_PAGE, WORKING_PAGE } from "@/config/pages";
 import { CALL_CTA, ENQUIRY_CTA } from "@/config/site";
-import { primaryBtn, secondaryBtn } from "@/components/solutions/shared";
+import { secondaryBtn } from "@/components/solutions/shared";
 import { ReactZone } from "@/components/field/FieldRoot";
 import { Eyebrow, Section, SectionTitle, gutter, anchorOffset } from "./Section";
 import AboutMark from "./AboutMark";
+import ContactForm from "./ContactForm";
 import "./directory/directory.css";
 
 /**
@@ -396,24 +397,16 @@ export function HomeWorkingTogether() {
 
 // --- 09 Start a Conversation -------------------------------------------------------------------
 
+const callLink =
+  "font-medium text-foreground underline decoration-accent-soft/40 underline-offset-4 transition-colors hover:decoration-accent-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft";
+
 /**
- * The close. Two honest actions: a call (booking when configured, otherwise
- * "Request a call" to the Contact page) and a written enquiry. The note says
- * exactly what happens while booking and delivery are not connected.
+ * The close: the enquiry form in place (ContactForm, shared with /contact).
+ * Until delivery is configured it says plainly that nothing is sent, before
+ * and after submitting. A call stays one link away (booking when configured,
+ * otherwise the Contact page).
  */
 export function HomeContact() {
-  const call = CALL_CTA.external ? (
-    <a href={CALL_CTA.href} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
-      {CALL_CTA.label} <span aria-hidden>→</span>
-    </a>
-  ) : (
-    <Link href={CALL_CTA.href} className={primaryBtn}>
-      {CALL_CTA.label}
-      <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">
-        →
-      </span>
-    </Link>
-  );
   return (
     <section id="contact" data-chapter="contact" data-sr-section="" aria-labelledby="contact-title" className={`relative ${anchorOffset}`}>
       {dots}
@@ -429,43 +422,56 @@ export function HomeContact() {
             className="absolute inset-0 -z-10 bg-[linear-gradient(rgb(110_160_255/0.08)_1px,transparent_1px),linear-gradient(90deg,rgb(110_160_255/0.08)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_60%_70%_at_85%_100%,#000_10%,transparent_75%)]"
           />
           <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-accent-soft/70 to-transparent" />
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-7">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
+            {/* The invitation and what happens next. */}
+            <div className="lg:col-span-5">
               <Eyebrow>{CLOSING.eyebrow}</Eyebrow>
               <h2
                 id="contact-title"
-                className="reveal mt-5 max-w-[17ch] text-[clamp(2.3rem,8.8vw,3.1rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3.1rem,5.8vw,4.25rem)]"
+                className="reveal mt-5 max-w-[16ch] text-[clamp(2.3rem,8.8vw,3.1rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground md:text-[clamp(3rem,5.4vw,3.75rem)] lg:text-[clamp(2.75rem,3.6vw,3.5rem)]"
               >
                 Let’s discuss what your business could do{" "}
                 <span className="bg-gradient-to-r from-accent-soft to-[#9fc0ff] bg-clip-text text-transparent">better</span>
                 <span className="text-accent">.</span>
               </h2>
               <p className="mt-6 max-w-[34rem] text-[1.0625rem] leading-relaxed text-muted md:text-lg">{CLOSING.intro}</p>
-              <div className="mt-9 flex flex-col gap-3 min-[460px]:flex-row">
-                {call}
-                <Link href={ENQUIRY_CTA.href} className={secondaryBtn}>
-                  {ENQUIRY_CTA.label}
-                </Link>
-              </div>
-              {!CALL_CTA.external && <p className="mt-5 max-w-[32rem] text-[0.8125rem] leading-relaxed text-subtle">{CLOSING.previewNote}</p>}
+
+              <p className="mt-10 text-xs font-medium uppercase tracking-[0.16em] text-subtle">What to expect</p>
+              <ol className="relative mt-5 grid gap-5">
+                <span aria-hidden className="absolute bottom-3 left-[0.9375rem] top-3 w-px bg-gradient-to-b from-accent via-accent/40 to-transparent" />
+                {CONTACT.expectations.map((e, i) => (
+                  <li key={e} className="relative grid grid-cols-[2rem_1fr] items-start gap-4 text-[0.9375rem] leading-relaxed text-foreground/85">
+                    <span
+                      aria-hidden
+                      className="relative z-10 grid h-8 w-8 place-items-center rounded-full border border-accent/60 bg-[#0a1324] font-mono text-xs text-accent-soft shadow-[0_0_16px_rgb(54_123_250/0.35)]"
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="pt-1">{e}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <p className="mt-10 text-[0.9375rem] text-muted">
+                Prefer to talk it through?{" "}
+                {CALL_CTA.external ? (
+                  <a href={CALL_CTA.href} target="_blank" rel="noopener noreferrer" className={callLink}>
+                    {CALL_CTA.label} →
+                  </a>
+                ) : (
+                  <Link href={CALL_CTA.href} className={callLink}>
+                    {CALL_CTA.label} →
+                  </Link>
+                )}
+              </p>
             </div>
-            <div className="lg:col-span-5 lg:pt-4">
-              <div className="rounded-[22px] border border-white/[0.09] bg-[#080d17]/60 p-6 backdrop-blur-sm sm:p-7">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-subtle">What to expect</p>
-                <ol className="relative mt-6 grid gap-7">
-                  <span aria-hidden className="absolute bottom-3 left-[0.9375rem] top-3 w-px bg-gradient-to-b from-accent via-accent/40 to-transparent" />
-                  {CONTACT.expectations.map((e, i) => (
-                    <li key={e} className="relative grid grid-cols-[2rem_1fr] items-start gap-4 text-[0.9375rem] leading-relaxed text-foreground/85 md:text-base">
-                      <span
-                        aria-hidden
-                        className="relative z-10 grid h-8 w-8 place-items-center rounded-full border border-accent/60 bg-[#0a1324] font-mono text-xs text-accent-soft shadow-[0_0_16px_rgb(54_123_250/0.35)]"
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="pt-1">{e}</span>
-                    </li>
-                  ))}
-                </ol>
+
+            {/* The enquiry form itself (honest about delivery: ContactForm). */}
+            <div className="lg:col-span-7">
+              <div className="rounded-[24px] border border-white/[0.1] bg-[#070c16]/75 p-5 shadow-[0_40px_80px_-50px_rgb(0_0_0/0.9)] backdrop-blur-sm sm:p-8">
+                <h3 className="text-[1.375rem] font-semibold tracking-[-0.02em] text-foreground">{ENQUIRY_CTA.label.replace(/^./, (c) => c.toUpperCase())}</h3>
+                <p className="mb-6 mt-1.5 text-[0.9375rem] text-muted">A few sentences is enough. It doesn’t need to be a finished brief.</p>
+                <ContactForm />
               </div>
             </div>
           </div>
