@@ -160,19 +160,10 @@ export const FAMILIES: Family[] = [
 
 export const ABOUT_HOME = {
   eyebrow: "About Solvitech",
-  title: "Technology expertise. Business understanding",
+  title: ["Technology expertise.", "Business understanding"],
   statement:
     "Solvitech is a founder-led, engineering-led technology business that helps organisations make technology work more effectively.",
-  body: [
-    "We start with how your business actually operates: the people, the processes and the goals. Only then do we recommend what to change, whether that is AI, an automation, a website or a bespoke system.",
-    "What gets built is tailored to you, not a one-size-fits-all package, and engineered to stay dependable long after launch.",
-  ],
-  traits: [
-    { title: "Engineering-led", body: "Systems designed to be dependable, maintainable and secure." },
-    { title: "Founder-led", body: "You work directly with the founder, from the first conversation onwards." },
-    { title: "Practical", body: "Recommendations grounded in how your business runs day to day." },
-    { title: "Tailored", body: "Implementation shaped around your needs rather than a template." },
-  ],
+  body: "We start with how your business actually operates, the people, the processes and the goals, and only then recommend what to change. What gets built is tailored to you and engineered to keep working long after launch.",
   link: { label: "More about Solvitech", href: "/about" },
 };
 

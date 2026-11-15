@@ -16,7 +16,7 @@ import { CALL_CTA, ENQUIRY_CTA } from "@/config/site";
 import { primaryBtn, secondaryBtn } from "@/components/solutions/shared";
 import { ReactZone } from "@/components/field/FieldRoot";
 import { Eyebrow, Section, SectionTitle, gutter, anchorOffset } from "./Section";
-import { AboutVisual } from "./directory/Visuals";
+import AboutMark from "./AboutMark";
 import "./directory/directory.css";
 
 /**
@@ -36,52 +36,27 @@ const dots = <div aria-hidden className="sr sr-dots -z-10" />;
 
 export function HomeAbout() {
   return (
-    <Section id="about" seamless band field={dots}>
-      {/* Headline: the two halves of what Solvitech brings. */}
-      <Eyebrow>{ABOUT_HOME.eyebrow}</Eyebrow>
-      <h2
-        id="about-title"
-        className="reveal mt-5 text-[clamp(2.3rem,9vw,3rem)] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[clamp(3rem,6.4vw,4.25rem)] lg:text-[clamp(3.75rem,5vw,4.75rem)]"
-      >
-        <span className="block text-foreground">Technology expertise.</span>
-        <span className="block bg-gradient-to-r from-accent-soft to-[#9fc0ff] bg-clip-text text-transparent">
-          Business understanding<span className="text-accent">.</span>
-        </span>
-      </h2>
-
-      <div className="mt-10 grid items-center gap-10 md:mt-14 lg:grid-cols-12 lg:gap-14">
-        <div className="lg:col-span-5">
-          <p className="text-[1.25rem] font-medium leading-[1.4] tracking-[-0.012em] text-foreground md:text-[1.5rem]">
-            {ABOUT_HOME.statement}
-          </p>
-          {ABOUT_HOME.body.map((p) => (
-            <p key={p} className="mt-4 max-w-[34rem] text-[0.9375rem] leading-relaxed text-muted md:text-base">
-              {p}
-            </p>
-          ))}
-          <Link href={ABOUT_HOME.link.href} className={`${secondaryBtn} mt-8`}>
-            {ABOUT_HOME.link.label} <span aria-hidden>→</span>
-          </Link>
-        </div>
-        <div data-svc="" className="reveal -mx-[max(1.25rem,env(safe-area-inset-left))] sm:mx-0 lg:col-span-7">
-          <AboutVisual label="Illustration: business understanding and technology expertise as two overlapping planes; where they meet, the right solution, built to fit." />
-        </div>
+    <Section id="about" seamless band field={dots} className="overflow-hidden" pad="py-20 md:py-28 lg:py-36">
+      {/* The Solvitech mark in glass, behind the text, turning with the cursor. */}
+      <AboutMark className="absolute -z-10 inset-x-0 top-[8%] h-[46%] opacity-70 md:inset-y-0 md:left-auto md:right-[-6%] md:top-0 md:h-auto md:w-[62%] md:opacity-100 lg:right-[-2%] lg:w-[54%]" />
+      <div className="relative max-w-[38rem] pt-[min(70vw,22rem)] md:pt-0 lg:max-w-[40rem]">
+        <Eyebrow>{ABOUT_HOME.eyebrow}</Eyebrow>
+        <h2
+          id="about-title"
+          className="reveal mt-5 text-[clamp(2.3rem,9vw,3rem)] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[clamp(3rem,6vw,4rem)] lg:text-[clamp(3.5rem,4.6vw,4.5rem)]"
+        >
+          <span className="block text-foreground">{ABOUT_HOME.title[0]}</span>
+          <span className="block bg-gradient-to-r from-accent-soft to-[#9fc0ff] bg-clip-text text-transparent">
+            {ABOUT_HOME.title[1]}
+            <span className="text-accent">.</span>
+          </span>
+        </h2>
+        <p className="mt-8 text-[1.1875rem] font-medium leading-[1.45] tracking-[-0.01em] text-foreground md:text-[1.375rem]">{ABOUT_HOME.statement}</p>
+        <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted md:text-base">{ABOUT_HOME.body}</p>
+        <Link href={ABOUT_HOME.link.href} className={`${secondaryBtn} mt-9`}>
+          {ABOUT_HOME.link.label} <span aria-hidden>→</span>
+        </Link>
       </div>
-
-      {/* What working with Solvitech is like, as one ruled row. */}
-      <dl className="mt-14 grid gap-y-8 border-t border-white/[0.09] pt-8 sm:grid-cols-2 sm:gap-x-10 md:mt-20 lg:grid-cols-4 lg:gap-x-0">
-        {ABOUT_HOME.traits.map((t, i) => (
-          <div key={t.title} className="lg:border-l lg:border-white/[0.09] lg:px-8 lg:first:border-l-0 lg:first:pl-0 lg:last:pr-0">
-            <dt className="flex items-baseline gap-3 text-[1.125rem] font-semibold tracking-[-0.015em] text-foreground">
-              <span aria-hidden className="font-mono text-xs font-normal text-accent-soft">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              {t.title}
-            </dt>
-            <dd className="mt-2 text-[0.9375rem] leading-relaxed text-muted">{t.body}</dd>
-          </div>
-        ))}
-      </dl>
     </Section>
   );
 }
@@ -107,17 +82,24 @@ const dim = "rgb(255 255 255 / 0.08)";
 function PrincipleArt({ i }: { i: number }) {
   if (i === 0) {
     // Business first: look closely at how the work flows before choosing anything.
+    // Four steps on one line; the second is examined under a lens.
+    const steps = [50, 110, 170, 230];
     return (
       <svg viewBox="0 0 280 130" fill="none" className="h-full w-full">
-        <path d="M30 70h50M110 70h50M190 70h50" stroke={line} strokeWidth="1.5" strokeDasharray="3 4" />
-        {[18, 98, 178, 238].map((x, k) => (
-          <rect key={x} x={x} y={k === 1 ? 56 : 60} width={k === 1 ? 28 : 22} height={k === 1 ? 28 : 20} rx="5" stroke={k === 1 ? ink : line} strokeWidth="1.5" fill={k === 1 ? "rgb(var(--acc) / 0.15)" : "none"} />
-        ))}
+        {/* Connectors run edge to edge, never through a step. */}
+        <path d="M62 58h33M125 58h33M182 58h36" stroke={line} strokeWidth="1.5" strokeDasharray="3 4" />
+        {steps.map((x, k) =>
+          k === 1 ? (
+            <rect key={x} x={x - 14} y={44} width="28" height="28" rx="6" stroke={ink} strokeWidth="1.5" fill="rgb(var(--acc) / 0.15)" />
+          ) : (
+            <rect key={x} x={x - 11} y={48} width="22" height="20" rx="5" stroke={line} strokeWidth="1.5" />
+          ),
+        )}
         <g className="art-hot">
-          <circle cx="112" cy="70" r="34" stroke={ink} strokeWidth="1.5" />
-          <path d="M136 94l22 22" stroke={ink} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="110" cy="58" r="27" stroke={ink} strokeWidth="1.5" />
+          <path d="M129 77l14 14" stroke={ink} strokeWidth="3" strokeLinecap="round" />
         </g>
-        <text x="18" y="112" fill="rgb(255 255 255 / 0.35)" fontSize="10" fontFamily="var(--font-mono)">
+        <text x="140" y="118" textAnchor="middle" fill="rgb(255 255 255 / 0.35)" fontSize="10" fontFamily="var(--font-mono)">
           how the work really happens
         </text>
       </svg>
@@ -147,15 +129,15 @@ function PrincipleArt({ i }: { i: number }) {
   // Direct accountability: one line between you and the person doing the work.
   return (
     <svg viewBox="0 0 280 130" fill="none" className="h-full w-full">
-      <path d="M78 65h124" stroke={line} strokeWidth="1.5" />
-      <path d="M78 65h124" stroke={ink} strokeWidth="2" className="art-hot" />
+      <path d="M84 65h112" stroke={line} strokeWidth="1.5" />
+      <path d="M84 65h112" stroke={ink} strokeWidth="2" className="art-hot" />
       <circle cx="140" cy="65" r="4" fill={ink} className="art-hot" />
       {[
         [56, "You"],
         [224, "Founder"],
       ].map(([x, t]) => (
         <g key={t as string}>
-          <circle cx={x as number} cy="65" r="22" stroke={t === "You" ? line : ink} strokeWidth="1.5" fill="#0a1222" />
+          <circle cx={x as number} cy="65" r="28"stroke={t === "You" ? line : ink} strokeWidth="1.5" fill="#0a1222" />
           <text x={x as number} y="69" textAnchor="middle" fill="rgb(255 255 255 / 0.75)" fontSize="10.5" fontFamily="var(--font-sans)">
             {t}
           </text>
@@ -295,27 +277,46 @@ function ModelArt({ id }: { id: (typeof HOME_MODELS)[number]["id"] }) {
         <g className="art-hot" stroke={ink} strokeWidth="1.2">
           <path d="M80 18h100M80 13v10M180 13v10" />
         </g>
-        <circle cx="176" cy="34" r="11" fill="#0a1222" stroke={ink} strokeWidth="1.6" className="art-hot" />
-        <path d="M171 34l3.5 3.5 6-7" stroke={ink} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="art-hot" />
+        {/* Agreed: a tick badge on the scope's lower corner, clear of the measure. */}
+        <circle cx="180" cy="94" r="11" fill="#0a1222" stroke={ink} strokeWidth="1.6" className="art-hot" />
+        <path d="M175 94l3.5 3.5 6-7" stroke={ink} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="art-hot" />
         {label(130, 116, "one agreed scope")}
       </svg>
     );
   }
   if (id === "bespoke") {
-    const boxes: [number, number, boolean][] = [
-      [40, 28, false],
-      [110, 22, true],
-      [180, 40, false],
-      [72, 78, false],
-      [150, 82, false],
+    // Parts as [centre x, centre y, key]; links run centre to centre and are
+    // drawn first, so each part (opaque) covers its end: every link meets its box.
+    const parts: [number, number, boolean][] = [
+      [55, 42, false],
+      [130, 36, true],
+      [205, 48, false],
+      [88, 90, false],
+      [172, 92, false],
     ];
+    const links: [number, number][] = [
+      [0, 1],
+      [1, 2],
+      [1, 3],
+      [1, 4],
+      [3, 4],
+    ];
+    const hot = new Set(["0-1", "1-2", "1-4"]);
+    const seg = ([a, b]: [number, number]) => `M${parts[a][0]} ${parts[a][1]}L${parts[b][0]} ${parts[b][1]}`;
     return (
       <svg viewBox="0 0 260 130" fill="none" className="h-full w-full">
-        <path d="M70 46l40-8M150 38l30 14M90 78l30-26M140 52l20 30M110 94h40" stroke={line} strokeWidth="1.4" />
-        <path d="M70 46l40-8M150 38l30 14M140 52l20 30" stroke={ink} strokeWidth="1.6" className="art-hot" />
-        {boxes.map(([x, y, key]) => (
-          <rect key={`${x}-${y}`} x={x} y={y} width={key ? 40 : 30} height={key ? 32 : 24} rx="6" stroke={key ? ink : line} strokeWidth="1.5" fill={key ? "rgb(var(--acc) / 0.14)" : "#0a1222"} />
-        ))}
+        <path d={links.map(seg).join("")} stroke={line} strokeWidth="1.4" />
+        <path d={links.filter(([a, b]) => hot.has(`${a}-${b}`)).map(seg).join("")} stroke={ink} strokeWidth="1.6" className="art-hot" />
+        {parts.map(([cx, cy, key]) => {
+          const w = key ? 40 : 30;
+          const h = key ? 32 : 24;
+          return (
+            <g key={`${cx}-${cy}`}>
+              <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx="6" fill="#0a1222" />
+              <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx="6" stroke={key ? ink : line} strokeWidth="1.5" fill={key ? "rgb(var(--acc) / 0.14)" : "none"} />
+            </g>
+          );
+        })}
         {label(130, 124, "connected parts, in milestones")}
       </svg>
     );
