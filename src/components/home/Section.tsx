@@ -17,6 +17,7 @@ export function Section({
   className = "",
   field,
   seamless = false,
+  pad = "py-20 md:py-24 lg:py-28",
   children,
 }: {
   id: string;
@@ -24,6 +25,8 @@ export function Section({
   /** Homepage: no band, border or stacking context -- one continuous environment. */
   seamless?: boolean;
   className?: string;
+  /** Vertical padding (Tailwind classes). */
+  pad?: string;
   /** Decorative Solvitech Field behind the chapter. */
   field?: ReactNode;
   children: ReactNode;
@@ -37,7 +40,7 @@ export function Section({
       className={`relative ${seamless ? "" : `isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"}`} ${anchorOffset} ${className}`}
     >
       {field}
-      <div className={`mx-auto w-full max-w-[1440px] py-20 md:py-24 lg:py-28 ${gutter}`}>{children}</div>
+      <div className={`mx-auto w-full max-w-[1440px] ${pad} ${gutter}`}>{children}</div>
     </section>
   );
 }

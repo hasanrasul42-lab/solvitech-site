@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { SERVICES } from "@/config/services";
-import { NAV_CTA, NAV_LINKS, SITE } from "@/config/site";
+import { NAV_LINKS, NAV_SOLUTIONS, SITE, SOLUTIONS_HUB } from "@/config/site";
 import BrandLogo from "./BrandLogo";
 
 const linkClass =
@@ -22,29 +21,34 @@ export default function SiteFooter() {
         <div className="md:col-span-5">
           <BrandLogo />
           <p className="mt-4 max-w-[22rem] text-[0.9375rem] leading-relaxed text-muted">
-            Bespoke software, AI, automation and integrations, engineered around how your business works.
+            AI, automation, websites and bespoke software, engineered around how your business works.
           </p>
         </div>
         <nav aria-label="Footer" className="grid grid-cols-2 gap-10 md:col-span-7 md:justify-self-end">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-subtle">Solutions</p>
             <ul className="mt-4 grid gap-3">
-              {SERVICES.map((s) => (
-                <li key={s.slug}>
+              {NAV_SOLUTIONS.map((s) => (
+                <li key={s.href}>
                   <Link href={s.href} className={linkClass}>
-                    {s.name}
+                    {s.label}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href={SOLUTIONS_HUB.href} className={linkClass}>
+                  {SOLUTIONS_HUB.label}
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-subtle">Company</p>
             <ul className="mt-4 grid gap-3">
-              {[...NAV_LINKS, NAV_CTA].map((l) => (
+              {NAV_LINKS.map((l) => (
                 <li key={l.label}>
                   <Link href={l.href} className={linkClass}>
-                    {l.label === "Solutions" ? "All solutions" : l.label}
+                    {l.label}
                   </Link>
                 </li>
               ))}

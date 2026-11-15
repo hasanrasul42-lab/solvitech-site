@@ -1,7 +1,8 @@
 /**
- * Homepage chapters 04-07: Why Solvitech, Our Approach, Working Together and
- * Start a Conversation. All copy lives here so it can be edited without
- * touching layout code.
+ * Homepage copy (redesign V3.0): Find Your Solution, What We Do, Additional
+ * Services, About, Why Solvitech, Our Approach, Working Together and Start a
+ * Conversation. All copy lives here so it can be edited without touching
+ * layout code.
  *
  * Ground rules for this copy: no invented clients, credentials, team size,
  * prices, timescales or contractual promises. Anything commercial is phrased
@@ -10,13 +11,197 @@
 
 import { SERVICES } from "./services";
 
+// --- 02 Find Your Solution -------------------------------------------------------
+
+export const FIND = {
+  eyebrow: "Where to start",
+  title: "What can we help you achieve?",
+  intro: "Whether you’re exploring new technology or have a specific project in mind, find the right place to start.",
+  bespoke: { lead: "Need bespoke software or connected systems?", label: "See Custom Software & Integrations", href: "#software" },
+};
+
+export interface Route {
+  id: "ai" | "automation" | "websites";
+  title: string;
+  line: string;
+  href: string;
+  cue: string;
+}
+
+export const ROUTES: Route[] = [
+  {
+    id: "ai",
+    title: "Explore AI for my business",
+    line: "Discover where AI could add value, understand adoption and explore implementation.",
+    href: "/solutions/ai",
+    cue: "AI & Intelligent Solutions",
+  },
+  {
+    id: "automation",
+    title: "Save time and streamline operations",
+    line: "Reduce repetitive work and improve everyday business processes.",
+    href: "/solutions/automation",
+    cue: "Business Automation",
+  },
+  {
+    id: "websites",
+    title: "Build a website or online store",
+    line: "Explore professional websites, redesigns and e-commerce.",
+    href: "/solutions/websites",
+    cue: "Websites & E-commerce",
+  },
+];
+
+// --- 03 What We Do -------------------------------------------------------------------
+
+export const DIRECTORY = {
+  eyebrow: "What we do",
+  title: "Technology that works for your business",
+  intro:
+    "From exploring AI and automating processes to building websites and bespoke systems, Solvitech helps businesses put the right technology to work.",
+};
+
+export interface FamilyLink {
+  label: string;
+  href: string;
+}
+
+export interface Family {
+  id: "ai" | "automation" | "websites" | "software";
+  /** In-page anchor. */
+  anchor: string;
+  title: string;
+  /** Who it is for, in one short line above the title. */
+  kicker: string;
+  description: string;
+  /** Coverage, as one list or as named groups. */
+  coverage: { heading?: string; items: string[] }[];
+  links: FamilyLink[];
+  /** A quieter related link (e.g. SEO next to Websites). */
+  related?: FamilyLink & { lead: string };
+  /** Spoken description of the illustrative visual. */
+  visualLabel: string;
+}
+
+export const FAMILIES: Family[] = [
+  {
+    id: "ai",
+    anchor: "ai",
+    title: "AI & Intelligent Solutions",
+    kicker: "From first questions to working systems",
+    description:
+      "Understand where AI can benefit your business, explore practical opportunities and implement intelligent applications designed around your needs.",
+    coverage: [
+      { heading: "Advisory & adoption", items: ["AI discovery and advisory", "AI adoption planning", "Business decision support"] },
+      { heading: "Engineering & implementation", items: ["AI implementation", "Intelligent applications", "Bespoke AI-enabled systems"] },
+    ],
+    links: [{ label: "Explore AI & Intelligent Solutions", href: "/solutions/ai" }],
+    visualLabel:
+      "Illustration: an analytics application with a highlighted finding recommending a review of trade account pricing.",
+  },
+  {
+    id: "automation",
+    anchor: "automation",
+    title: "Business Automation",
+    kicker: "Less admin, more done",
+    description: "Reduce repetitive administration, streamline everyday processes and create more efficient ways of working.",
+    coverage: [
+      {
+        items: [
+          "Process automation",
+          "Workflow improvement",
+          "Administrative task automation",
+          "Operational efficiency",
+          "Automation between existing business tools",
+          "AI-assisted automation where appropriate",
+        ],
+      },
+    ],
+    links: [{ label: "Explore Business Automation", href: "/solutions/automation" }],
+    visualLabel:
+      "Illustration: a new work request assigned automatically to a free slot in a weekly schedule, with the customer notified.",
+  },
+  {
+    id: "websites",
+    anchor: "websites",
+    title: "Websites & E-commerce",
+    kicker: "Make the right impression",
+    description:
+      "Professional business websites, online stores and tailored digital experiences designed to make the right impression and support your business goals.",
+    coverage: [
+      {
+        items: [
+          "Business websites",
+          "Website redesigns",
+          "E-commerce",
+          "Bespoke digital experiences",
+          "Responsive design",
+          "Website development",
+        ],
+      },
+    ],
+    links: [{ label: "Explore Websites & E-commerce", href: "/solutions/websites" }],
+    related: { lead: "Want more people to find it?", label: "SEO & Digital Growth", href: "/solutions/digital-growth" },
+    visualLabel:
+      "Illustration: an original concept online store for a fictional ceramics brand, shown on a desktop browser and a phone.",
+  },
+  {
+    id: "software",
+    anchor: "software",
+    title: "Custom Software & Integrations",
+    kicker: "Built around how you operate",
+    description: "Develop software around your business requirements and connect the systems you already rely on.",
+    coverage: [
+      { heading: "Custom software", items: ["Bespoke applications", "Internal business platforms", "Operational systems", "Client and staff portals"] },
+      { heading: "Integrations", items: ["Systems integration", "Connected business applications"] },
+    ],
+    links: [
+      { label: "Explore Custom Software", href: "/solutions/custom-software" },
+      { label: "Explore Systems Integration", href: "/solutions/integrations" },
+    ],
+    visualLabel:
+      "Illustration: a bespoke jobs management application connected to a separate accounts application, with a completed job synced as an invoice.",
+  },
+];
+
+// --- 04 Additional Services --------------------------------------------------------------
+
+export const MORE = {
+  eyebrow: "Also available",
+  title: "SEO & Digital Growth",
+  line: "Search visibility, conversion improvements and clear measurement, so the right people find you and get in touch. Often paired with a new or redesigned website.",
+  href: "/solutions/digital-growth",
+  linkLabel: "Explore SEO & Digital Growth",
+  hub: { lead: "Every service in one place", label: "Browse all solutions", href: "/solutions" },
+};
+
+// --- 05 About Solvitech ----------------------------------------------------------------------
+
+export const ABOUT_HOME = {
+  eyebrow: "About Solvitech",
+  title: "Technology expertise. Business understanding",
+  statement:
+    "Solvitech is a founder-led, engineering-led technology business that helps organisations make technology work more effectively.",
+  body: [
+    "We start with how your business actually operates: the people, the processes and the goals. Only then do we recommend what to change, whether that is AI, an automation, a website or a bespoke system.",
+    "What gets built is tailored to you, not a one-size-fits-all package, and engineered to stay dependable long after launch.",
+  ],
+  traits: [
+    { title: "Engineering-led", body: "Systems designed to be dependable, maintainable and secure." },
+    { title: "Founder-led", body: "You work directly with the founder, from the first conversation onwards." },
+    { title: "Practical", body: "Recommendations grounded in how your business runs day to day." },
+    { title: "Tailored", body: "Implementation shaped around your needs rather than a template." },
+  ],
+  link: { label: "More about Solvitech", href: "/about" },
+};
+
 // --- 04 Why Solvitech -------------------------------------------------------
 
 export const WHY = {
   eyebrow: "Why Solvitech",
-  title: "Engineering that starts with how your business works",
+  title: "How we approach your business",
   lead:
-    "Solvitech is a founder-led engineering practice. We take on a focused number of projects so that each one gets senior attention from first conversation to launch, and the person who scopes your project is the person accountable for delivering it.",
+    "Good technology decisions come from understanding the business first. This is what you can expect from the way we work.",
   /** Dedicated About page. */
   aboutPage: "/about" as string | undefined,
   aboutLabel: "More about Solvitech",
@@ -27,34 +212,41 @@ export interface Principle {
   body: string;
 }
 
-/**
- * Four distinct reasons, not overlapping restatements. Founder accountability
- * is carried by the lead above; the fuller principles live on /about.
- */
+/** Three principles, each annotating part of the example project outline. */
 export const PRINCIPLES: Principle[] = [
   {
-    title: "Problems before technology",
-    body: "We start with the process, the people involved and where time or information is being lost, and weigh every recommendation against what it costs to build and run and whether your team will actually use it.",
+    title: "Business first",
+    body: "We understand the real business challenge, its constraints and the outcome you want before deciding which technology is appropriate.",
   },
   {
-    title: "Real engineering depth",
-    body: "Software, AI, automation and integrations are designed and built properly: maintainable code, sensible security, tested before launch and documented after it.",
+    title: "Engineering with purpose",
+    body: "Solutions are chosen for genuine operational need, maintainability and practical value, not novelty. Sometimes the right answer is the smaller change.",
   },
   {
-    title: "Built for you, not adapted from a template",
-    body: "Your workflows, data and customers are specific to you. Where an existing tool already does the job well, we will say so; where it doesn't, we build what fits.",
+    title: "Direct accountability",
+    body: "Clear communication and founder-led involvement throughout the engagement you agree, with decisions explained in plain English.",
   },
-  {
-    title: "Honest scoping",
-    body: "Written scopes and plain-English explanations. If something is uncertain, risky or not worth building, you hear it early.",
-  },
+];
+
+/**
+ * The neutral project-planning surface the principles annotate. An example
+ * outline, labelled as such: not a client project.
+ */
+export const PLAN_OUTLINE: { label: string; value: string; note?: string; principle: 0 | 1 | 2 }[] = [
+  { label: "Problem", value: "Enquiries wait too long to reach the right person", principle: 0 },
+  { label: "Constraints", value: "Keep the current finance system · small team", principle: 0 },
+  { label: "Intended outcome", value: "Every enquiry has an owner the day it arrives", principle: 0 },
+  { label: "Options weighed", value: "A · Replace the customer system", note: "B · Connect existing tools and automate routing", principle: 1 },
+  { label: "Recommendation", value: "Option B: less disruption, builds on what already works", principle: 1 },
+  { label: "Responsibility", value: "Scoped, delivered and reported on by the founder", principle: 2 },
+  { label: "Communication", value: "Progress and decisions shared in plain English", principle: 2 },
 ];
 
 // --- 05 Our Approach -----------------------------------------------------------
 
 export const APPROACH = {
   eyebrow: "Our approach",
-  title: "From first conversation to a system you rely on",
+  title: "From first conversation to a result you can rely on",
   intro:
     "Every project moves through four stages. Each one ends with something concrete for you to review, and nothing moves forward without your agreement.",
   /** Dedicated page. */
@@ -119,6 +311,22 @@ export const STAGES: Stage[] = [
   },
 ];
 
+/** Homepage: why each stage matters. */
+export const STAGE_WHY: Record<Stage["id"], string> = {
+  discover: "Solving the right problem first is the surest way to spend well.",
+  design: "Agreeing the detail up front avoids surprises in cost and scope.",
+  engineer: "You see real progress early and can steer it as it takes shape.",
+  launch: "Technology earns its value in daily use, not on launch day.",
+};
+
+/** Homepage one-liners for each stage (the /approach page keeps its fuller copy). */
+export const STAGE_HOME_LINES: Record<Stage["id"], string> = {
+  discover: "Clarify the need, the context, the constraints and what success looks like.",
+  design: "Map the experience and the architecture before anything is built.",
+  engineer: "Implement and test capabilities that fit the purpose.",
+  launch: "Agree the launch, the handover and what to improve next.",
+};
+
 export const STAGE_LABELS = {
   happens: "What happens",
   youContribute: "Your part",
@@ -132,10 +340,17 @@ export const WORKING = {
   eyebrow: "Working together",
   title: "Clear engagements, agreed before work begins",
   intro:
-    "There is no fixed price list, because no two systems are the same. Instead, every engagement is scoped and quoted in writing before work starts, so you know what you are committing to.",
+    "There are different ways to work with Solvitech, depending on what you need. Every engagement is scoped and agreed in writing before work starts, so you know what you are committing to.",
   /** Dedicated page. */
   page: "/working-together" as string | undefined,
 };
+
+/** Homepage treatment of the three engagement formats. */
+export const HOME_MODELS: { id: "defined" | "bespoke" | "partnership"; name: string; line: string; shape: string }[] = [
+  { id: "defined", name: "Defined Projects", line: "Clearly scoped work with agreed objectives and deliverables.", shape: "One clear scope" },
+  { id: "bespoke", name: "Bespoke Systems", line: "Tailored engineering engagements for more complex business requirements.", shape: "Several connected parts, in milestones" },
+  { id: "partnership", name: "Ongoing Partnerships", line: "Continuing development, improvement or support where separately agreed.", shape: "A continuing cycle of improvement" },
+];
 
 // --- 07 Start a Conversation --------------------------------------------------------
 
@@ -158,6 +373,17 @@ export const CONTACT = {
    */
   email: undefined as string | undefined,
   page: "/contact" as string | undefined,
+};
+
+/** Homepage closing chapter (the Contact page keeps CONTACT above). */
+export const CLOSING = {
+  eyebrow: "Start a conversation",
+  title: "Let’s discuss what your business could do better",
+  intro:
+    "Whether you have a specific project in mind or are exploring what’s possible, start with a conversation. You don’t need a technical specification.",
+  /** Shown while no booking route exists: says exactly what the actions do. */
+  previewNote:
+    "Online booking isn’t connected yet. Both options open the Contact page, where you can prepare your enquiry; it says clearly that messages aren’t being delivered yet.",
 };
 
 /** Optional "service interest" choices on the enquiry form: the official service names. */

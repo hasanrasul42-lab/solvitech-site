@@ -3,7 +3,8 @@ import { WORK_VISIBLE } from "./work";
 /**
  * Site structure and navigation.
  *
- * The homepage is seven chapters, in this order (Master Blueprint V1.4). Each
+ * The homepage chapters, in this order (homepage redesign V3.0, built on the
+ * Master Blueprint V1.4 routes). Each
  * renders as a <section> whose id matches its chapter id. Navigation points at
  * the dedicated pages; the homepage chapters link to them as well.
  *
@@ -11,7 +12,17 @@ import { WORK_VISIBLE } from "./work";
  * projects exist (src/config/work.ts).
  */
 
-export type ChapterId = "hero" | "solutions" | "work" | "why" | "approach" | "working-together" | "contact";
+export type ChapterId =
+  | "hero"
+  | "find"
+  | "solutions"
+  | "more"
+  | "work"
+  | "about"
+  | "why"
+  | "approach"
+  | "working-together"
+  | "contact";
 
 export interface Chapter {
   id: ChapterId;
@@ -21,8 +32,11 @@ export interface Chapter {
 
 export const HOME_CHAPTERS: Chapter[] = [
   { id: "hero", title: "Engineering better business", live: true },
-  { id: "solutions", title: "Solutions", live: true },
+  { id: "find", title: "Find your solution", live: true },
+  { id: "solutions", title: "What we do", live: true },
+  { id: "more", title: "Additional services", live: true },
   { id: "work", title: "Selected work", live: WORK_VISIBLE },
+  { id: "about", title: "About Solvitech", live: true },
   { id: "why", title: "Why Solvitech", live: true },
   { id: "approach", title: "Our approach", live: true },
   { id: "working-together", title: "Working together", live: true },
@@ -49,19 +63,63 @@ function chapterLink(label: string, id: ChapterId): SiteLink {
 const page = (label: string, href: string): SiteLink => ({ label, href, pending: false });
 
 /**
- * Header links (Blueprint V1.4 order: Solutions, Work when publishable,
- * Approach, About; plus Working Together). Only real destinations.
+ * The six dedicated service pages, as the header's Solutions menu lists them.
+ * The homepage groups them into four families; navigation never hides one.
+ */
+export interface NavService {
+  label: string;
+  href: string;
+  line: string;
+}
+
+export const NAV_SOLUTIONS: NavService[] = [
+  { label: "AI & Intelligent Solutions", href: "/solutions/ai", line: "AI advisory, adoption and intelligent applications" },
+  { label: "Business Automation", href: "/solutions/automation", line: "Less repetitive admin, smoother everyday processes" },
+  { label: "Websites & E-commerce", href: "/solutions/websites", line: "Business websites, redesigns and online stores" },
+  { label: "Custom Software", href: "/solutions/custom-software", line: "Applications and platforms built around how you work" },
+  { label: "Systems Integration", href: "/solutions/integrations", line: "Connect the systems you already rely on" },
+  { label: "SEO & Digital Growth", href: "/solutions/digital-growth", line: "Be found, and turn visits into enquiries" },
+];
+
+/** The Solutions overview page, offered at the foot of the Solutions menu. */
+export const SOLUTIONS_HUB = { label: "All solutions", href: "/solutions" };
+
+/**
+ * Header links after the Solutions menu: Selected Work when publishable,
+ * About, Our Approach, Working Together, Contact. Only real destinations.
  */
 export const NAV_LINKS: SiteLink[] = [
-  page("Solutions", "/solutions"),
   chapterLink("Our Work", "work"),
-  page("Our Approach", "/approach"),
   page("About", "/about"),
+  page("Our Approach", "/approach"),
   page("Working Together", "/working-together"),
+  page("Contact", "/contact"),
 ].filter((l) => !l.pending);
 
-/** Site-wide call to action: the dedicated Contact page. */
-export const NAV_CTA: SiteLink = page("Start a Project", "/contact");
+/**
+ * Approved booking / scheduling URL. Deliberately unset: no booking service
+ * has been configured. Until it is, the call action is labelled "Request a
+ * call" and opens the Contact page (which says plainly that enquiries are not
+ * yet delivered); nothing claims a call has been booked. Set it and every
+ * call action switches to "Book a call" and the scheduler.
+ */
+export const BOOKING_URL: string | undefined = undefined;
+
+/** The site-wide call action (header, homepage close). */
+export const CALL_CTA: SiteLink & { external: boolean } = BOOKING_URL
+  ? { label: "Book a call", href: BOOKING_URL, pending: false, external: true }
+  : { label: "Request a call", href: "/contact", pending: false, external: false };
+
+/** The written alternative to a call. */
+export const ENQUIRY_CTA: SiteLink = page("Send a project enquiry", "/contact");
+
+/** Header call to action. */
+export const NAV_CTA: SiteLink & { external: boolean } = CALL_CTA;
+
+/** Kept for the archived storytelling chapters (not on the homepage). */
+export const CONVERSATION_CTA: SiteLink & { external: boolean } = BOOKING_URL
+  ? { label: "Book a call", href: BOOKING_URL, pending: false, external: true }
+  : { label: "Start a conversation", href: "/contact", pending: false, external: false };
 
 /** Hero: Explore Solutions (primary, in-page) and Discuss a Project (Blueprint V1.4). */
 export const HERO_CTAS = {
@@ -90,5 +148,5 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL as string | undefined,
   title: "Solvitech | Engineering better business",
   description:
-    "Solvitech designs and builds bespoke software, AI agents, business automation and integrations, plus websites and digital growth, so businesses work better.",
+    "Solvitech helps businesses put the right technology to work: AI advisory and implementation, business automation, websites and e-commerce, custom software and systems integration.",
 };
