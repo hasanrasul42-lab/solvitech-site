@@ -18,6 +18,8 @@ export default function HomeSolutions() {
   return (
     <section id="solutions" data-chapter="solutions" data-sr-section="" aria-labelledby="solutions-title" className={`relative ${anchorOffset}`}>
         <div aria-hidden className="sr sr-dots -z-10" />
+        {/* A cool haze over the directory's opening. */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[46rem] bg-[radial-gradient(ellipse_60%_55%_at_20%_0%,rgb(54_123_250/0.1),transparent_70%),radial-gradient(ellipse_40%_40%_at_85%_20%,rgb(150_140_255/0.06),transparent_70%)]" />
         <div className={`mx-auto w-full max-w-[1440px] pb-8 pt-16 md:pt-20 lg:pt-24 ${gutter}`}>
           <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
             <div className="lg:col-span-7">
@@ -91,12 +93,12 @@ function FamilyRow({ family: f, index }: { family: Family; index: number }) {
       id={f.anchor}
       data-svc=""
       aria-labelledby={`${f.anchor}-title`}
-      className={`acc-${f.id} relative grid grid-cols-1 gap-x-14 border-t border-hairline py-14 md:py-20 lg:py-24 xl:gap-x-20 ${cols} ${areas} lg:grid-rows-[auto_1fr] ${anchorOffset}`}
+      className={`acc-${f.id} relative grid grid-cols-1 gap-x-14 py-14 last:pb-20 md:py-20 md:last:pb-24 lg:py-24 xl:gap-x-20 ${cols} ${areas} lg:grid-rows-[auto_1fr] ${anchorOffset}`}
     >
-      {f.id === "websites" && (
-        // The website family gets a little more light: it is a lead offer.
-        <div aria-hidden className="pointer-events-none absolute inset-x-[-10%] inset-y-0 -z-10 bg-[radial-gradient(ellipse_45%_60%_at_70%_50%,rgb(var(--acc)/0.09),transparent_70%)]" />
-      )}
+      {/* Atmosphere: the service's own light and a faint engineering grid
+          behind its visual, and a lit seam above it (directory.css). */}
+      <div aria-hidden className="svc-atmos" data-side={flip ? "left" : "right"} data-strong={f.id === "websites" ? "" : undefined} />
+      <span aria-hidden className="svc-seam" data-side={flip ? "left" : "right"} />
       <header className="[grid-area:auto] lg:self-end lg:[grid-area:head]">
         <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-subtle sm:tracking-[0.2em]">
           <span className="acc-text font-mono tracking-normal">{String(index + 1).padStart(2, "0")}</span>

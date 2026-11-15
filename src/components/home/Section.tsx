@@ -18,12 +18,19 @@ export function Section({
   field,
   seamless = false,
   pad = "py-20 md:py-24 lg:py-28",
+  band = false,
   children,
 }: {
   id: string;
   tone?: "base" | "raised";
   /** Homepage: no band, border or stacking context -- one continuous environment. */
   seamless?: boolean;
+  /**
+   * Homepage rhythm: a lifted navy surface with a lit top edge, so alternate
+   * sections read as distinct chapters of one page. Exposes its colour as
+   * --surface for opaque elements inside it.
+   */
+  band?: boolean;
   className?: string;
   /** Vertical padding (Tailwind classes). */
   pad?: string;
@@ -37,11 +44,27 @@ export function Section({
       data-chapter={id}
       data-sr-section={seamless ? "" : undefined}
       aria-labelledby={`${id}-title`}
-      className={`relative ${seamless ? "" : `isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"}`} ${anchorOffset} ${className}`}
+      className={`relative ${seamless ? "" : `isolate border-t border-hairline ${tone === "raised" ? "bg-[#0a0f1a]" : "bg-background"}`} ${band ? bandSurface : ""} ${anchorOffset} ${className}`}
+      style={band ? { ["--surface" as string]: "#0b1322" } : undefined}
     >
+      {band && <BandEdge />}
       {field}
       <div className={`mx-auto w-full max-w-[1440px] ${pad} ${gutter}`}>{children}</div>
     </section>
+  );
+}
+
+/** The band surface: lifted navy, hairline edges, a faint cool light from the top. */
+export const bandSurface =
+  "isolate border-y border-white/[0.06] bg-[#0b1322] bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgb(54_123_250/0.07),transparent_70%)]";
+
+/** A lit top edge: brightest at the centre, fading to the sides. */
+export function BandEdge() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 -top-px h-px bg-[linear-gradient(90deg,transparent,rgb(110_160_255/0.45)_50%,transparent)]"
+    />
   );
 }
 

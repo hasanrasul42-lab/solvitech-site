@@ -11,7 +11,7 @@ import "./directory/directory.css";
  */
 export default function HomeFind() {
   return (
-    <Section id="find" seamless field={<div aria-hidden className="sr sr-dots -z-10" />} pad="pb-12 pt-10 md:pb-16 md:pt-14 lg:pb-16 lg:pt-16">
+    <Section id="find" seamless band field={<div aria-hidden className="sr sr-dots -z-10" />} pad="pb-12 pt-10 md:pb-16 md:pt-14 lg:pb-16 lg:pt-16">
       <div className="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-12">
         <div className="lg:col-span-7">
           <Eyebrow>{FIND.eyebrow}</Eyebrow>
