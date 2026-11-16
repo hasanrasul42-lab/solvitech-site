@@ -71,7 +71,7 @@ export interface NavService {
 }
 
 export const NAV_SOLUTIONS: NavService[] = [
-  { label: "AI & Intelligent Solutions", href: "/solutions/ai", line: "AI advisory, adoption and intelligent applications" },
+  { label: "AI Consulting & Implementation", href: "/solutions/ai", line: "AI advisory, adoption and intelligent applications" },
   { label: "Business Automation", href: "/solutions/automation", line: "Less repetitive admin, smoother everyday processes" },
   { label: "Websites & E-commerce", href: "/solutions/websites", line: "Business websites, redesigns and online stores" },
   { label: "Custom Software", href: "/solutions/custom-software", line: "Applications and platforms built around how you work" },

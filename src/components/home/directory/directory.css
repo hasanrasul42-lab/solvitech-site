@@ -52,13 +52,14 @@
 .s3d-l {
   position: absolute;
   transform-style: preserve-3d;
-  transform: translateZ(var(--z, 0));
+  /* --dz: an extra depth offset a page can drive (AI page: an opened source). */
+  transform: translateZ(calc(var(--z, 0em) + var(--dz, 0em)));
   transition:
     transform 900ms var(--ease-precise),
     opacity 600ms var(--ease-precise);
 }
 .s3d[data-on] .s3d-l {
-  transform: translateZ(calc(var(--z, 0em) + var(--lift, 0em)));
+  transform: translateZ(calc(var(--z, 0em) + var(--lift, 0em) + var(--dz, 0em)));
 }
 
 /* Solid surfaces: a face and a darker edge just behind it. */

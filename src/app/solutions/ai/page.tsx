@@ -1,7 +1,7 @@
-import ServicePage, { serviceMetadata } from "@/components/solutions/ServicePage";
+import AiServicePage, { aiMetadata } from "@/components/solutions/ai/AiServicePage";
 
-export const metadata = serviceMetadata("ai");
+export const metadata = aiMetadata;
 
 export default function AiPage() {
-  return <ServicePage slug="ai" />;
+  return <AiServicePage />;
 }
