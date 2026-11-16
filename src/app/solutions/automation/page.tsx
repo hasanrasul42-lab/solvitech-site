@@ -1,7 +1,7 @@
-import ServicePage, { serviceMetadata } from "@/components/solutions/ServicePage";
+import AutomationServicePage, { automationMetadata } from "@/components/solutions/automation/AutomationServicePage";
 
-export const metadata = serviceMetadata("automation");
+export const metadata = automationMetadata;
 
 export default function AutomationPage() {
-  return <ServicePage slug="automation" />;
+  return <AutomationServicePage />;
 }

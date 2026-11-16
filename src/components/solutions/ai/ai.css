@@ -34,12 +34,6 @@
   transition-delay: 300ms;
 }
 
-/* Text points beside the visuals. */
-.ai-num {
-  background: rgb(54 123 250 / 0.12);
-  border-color: rgb(54 123 250 / 0.35);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .ai-field-hit,
   .ai-gate {
