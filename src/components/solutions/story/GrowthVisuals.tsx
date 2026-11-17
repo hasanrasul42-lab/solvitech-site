@@ -25,7 +25,7 @@ function Result({ title, url, dim }: { title: string; url: string; dim?: boolean
 
 export function GrowthHero() {
   return (
-    <Stage label="Illustration: a search results page for “boiler repair near me”, with your business's listing lifted out of the results beside a map card." rest={[9, -12]} className={ACC}>
+    <Stage track="section" label="Illustration: a search results page for “boiler repair near me”, with your business's listing lifted out of the results beside a map card." rest={[9, -12]} className={ACC}>
       <Layer x={1} y={2} w={38} h={36} slab>
         <div className="p-[1.2em]">
           <div className="flex items-center gap-[0.6em] rounded-full border border-white/12 bg-white/[0.04] px-[1em] py-[0.5em] text-[0.9em] text-white/80">
@@ -68,7 +68,7 @@ export function GrowthHero() {
 export function GrowthSigns() {
   const pages = [1, 2, 3, 4];
   return (
-    <Stage label="Illustration: four pages of search results receding into the distance, with your business's listing only on the last one." rest={[14, 16]} className={ACC}>
+    <Stage track="section" label="Illustration: four pages of search results receding into the distance, with your business's listing only on the last one." rest={[14, 16]} className={ACC}>
       {pages.map((p, i) => {
         const last = i === pages.length - 1;
         return (
@@ -102,7 +102,7 @@ export function GrowthFocus() {
     { n: "Improvement", x: 2, y: 15 },
   ];
   return (
-    <Stage label="Illustration: four cards in a loop with arrows between them: visibility, behaviour, enquiries and improvement." rest={[14, -6]} className={ACC}>
+    <Stage track="section" label="Illustration: four cards in a loop with arrows between them: visibility, behaviour, enquiries and improvement." rest={[14, -6]} className={ACC}>
       <Layer x={0} y={0} w={60} h={42} z={1}>
         <svg viewBox="0 0 60 42" className="absolute inset-0 h-full w-full overflow-visible" fill="none">
           <ellipse cx="30" cy="21" rx="19" ry="13.5" stroke="rgb(255 255 255 / 0.12)" strokeWidth="0.2" strokeDasharray="0.6 0.5" />
@@ -125,7 +125,7 @@ export function GrowthFocus() {
 export function GrowthBuilds() {
   const checks = ["Technical SEO", "Local search", "Content architecture", "Analytics & tracking", "Conversion", "Reporting"];
   return (
-    <Stage label="Illustration: a clipboard site report with six checks, technical SEO, local search, content, analytics, conversion and reporting, filling in." rest={[10, 12]} className={ACC}>
+    <Stage track="section" label="Illustration: a clipboard site report with six checks, technical SEO, local search, content, analytics, conversion and reporting, filling in." rest={[10, 12]} className={ACC}>
       <Layer x={10} y={2} w={30} h={38} z={0} slab faceClassName="!bg-[linear-gradient(170deg,#3a2f26,#241c16)]" style={turn(-3)} />
       <Layer x={12} y={5} w={26} h={33} z={2} lift={2} slab faceClassName="is-light" className="s3d-key" style={turn(-3)}>
         <div className="p-[1.3em] text-[#1f2633]">
@@ -165,7 +165,7 @@ export function GrowthClose() {
     { x: 14, y: 27, z: 4 },
   ];
   return (
-    <Stage label="Illustration: a town map with several business pins, one of them yours, raised above the rest." rest={[22, -10]} className={ACC}>
+    <Stage track="section" label="Illustration: a town map with several business pins, one of them yours, raised above the rest." rest={[22, -10]} className={ACC}>
       <Layer x={1} y={3} w={58} h={36} slab faceClassName="![background:#0f1a17]">
         <svg viewBox="0 0 58 36" className="absolute inset-0 h-full w-full" fill="none" strokeLinecap="round">
           <path d="M0 12 C 14 10, 24 18, 58 14" stroke="rgb(255 255 255 / 0.12)" strokeWidth="1.4" />

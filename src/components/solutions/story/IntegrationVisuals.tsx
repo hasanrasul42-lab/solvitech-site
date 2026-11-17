@@ -15,7 +15,7 @@ const ACC = "acc-integrations";
 
 export function IntegrationHero() {
   return (
-    <Stage label="Illustration: an online shop and an accounts system turned towards each other, with an order passing from one to the other as an invoice." rest={[8, 0]} className={ACC}>
+    <Stage track="section" label="Illustration: an online shop and an accounts system turned towards each other, with an order passing from one to the other as an invoice." rest={[8, 0]} className={ACC}>
       <Layer x={1} y={4} w={24} h={30} slab style={yaw(22)}>
         <WindowBar title="Online shop" />
         <div className="grid gap-[0.4em] p-[1em] text-[0.85em]">
@@ -69,7 +69,7 @@ export function IntegrationSigns() {
     { sys: "Support", name: "Jane Smyth", phone: "01632 960123", email: "jane@example.co.uk", diff: ["name", "phone"] },
   ];
   return (
-    <Stage label="Illustration: the same customer held in three systems with different names, phone numbers and email addresses." rest={[12, -12]} className={ACC}>
+    <Stage track="section" label="Illustration: the same customer held in three systems with different names, phone numbers and email addresses." rest={[12, -12]} className={ACC}>
       {records.map((r, i) => (
         <Layer key={r.sys} x={3 + i * 9} y={3 + i * 6} w={30} h={17} z={i * 4} lift={i * 1.5} slab className={i === 2 ? "s3d-key" : ""}>
           <div className="p-[1.1em] text-[0.85em]">
@@ -100,7 +100,7 @@ export function IntegrationFocus() {
     { n: "Failure handling", icon: "↻" },
   ];
   return (
-    <Stage label="Illustration: four linked nodes rising from left to right: source of truth, mapping, timing and failure handling." rest={[12, 14]} className={ACC}>
+    <Stage track="section" label="Illustration: four linked nodes rising from left to right: source of truth, mapping, timing and failure handling." rest={[12, 14]} className={ACC}>
       <Draw d="M8 31 C 16 31, 16 24, 22 24 S 30 17, 36 17 S 46 10, 51 10" z={1} dashed />
       {nodes.map((nd, i) => (
         <Layer key={nd.n} x={2 + i * 14} y={24 - i * 7} w={12} h={12} z={2 + i * 3} lift={1 + i} slab className={i === 3 ? "s3d-key" : ""} style={round(6)}>
@@ -124,7 +124,7 @@ export function IntegrationFocus() {
 export function IntegrationBuilds() {
   const ports = ["API", "Data sync", "CRM & accounts", "E-commerce", "Custom connector", "Monitoring"];
   return (
-    <Stage label="Illustration: a patch panel with six labelled ports, API, data sync, CRM and accounts, e-commerce, custom connector and monitoring, with cables plugged in and a sync log." rest={[10, -14]} className={ACC}>
+    <Stage track="section" label="Illustration: a patch panel with six labelled ports, API, data sync, CRM and accounts, e-commerce, custom connector and monitoring, with cables plugged in and a sync log." rest={[10, -14]} className={ACC}>
       <Layer x={2} y={4} w={56} h={17} slab faceClassName="!bg-[linear-gradient(170deg,#1c2131,#0e121c)]">
         <div className="grid h-full grid-cols-6 gap-[0.6em] p-[1em]">
           {ports.map((p) => (
@@ -155,7 +155,7 @@ const PIECE = "M2 2h11c0-2.6 4-2.6 4 0h11v10c-2.6 0-2.6 4 0 4v10H2V16c2.6 0 2.6-
 
 export function IntegrationClose() {
   return (
-    <Stage label="Illustration: two jigsaw pieces, your CRM and your accounts, fitting together." rest={[10, -14]} className={ACC}>
+    <Stage track="section" label="Illustration: two jigsaw pieces, your CRM and your accounts, fitting together." rest={[10, -14]} className={ACC}>
       <Layer x={3} y={6} w={28} h={28} z={0} lift={0}>
         <svg viewBox="0 0 30 28" className="absolute inset-0 h-full w-full overflow-visible">
           <path d={PIECE} fill="#f3efe8" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { gutter } from "@/components/home/Section";
+import "./cards.css";
 
 /**
  * Shared building blocks for the dedicated service pages (/solutions/ai,

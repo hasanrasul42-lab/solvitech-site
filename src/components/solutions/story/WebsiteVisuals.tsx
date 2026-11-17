@@ -15,7 +15,7 @@ const ACC = "acc-websites";
 
 export function WebsiteHero() {
   return (
-    <Stage label="Illustration: a website's sections lifting out of the browser frame: navigation, a headline, three service cards, an enquiry form and a footer." rest={[10, -14]} className={ACC}>
+    <Stage track="section" label="Illustration: a website's sections lifting out of the browser frame: navigation, a headline, three service cards, an enquiry form and a footer." rest={[10, -14]} className={ACC}>
       <Layer x={2} y={1} w={52} h={39} slab faceClassName="![background:transparent] !border-white/15">
         <div className="flex h-[2.4em] items-center gap-[0.4em] border-b border-white/10 px-[1em]">
           <span className="h-[0.5em] w-[0.5em] rounded-full bg-white/15" />
@@ -70,7 +70,7 @@ export function WebsiteHero() {
 
 export function WebsiteSigns() {
   return (
-    <Stage label="Illustration: a dated website with cluttered text and a tiny contact link, a gauge showing slow loading, and the same page breaking on a phone." rest={[12, 12]} className={ACC}>
+    <Stage track="section" label="Illustration: a dated website with cluttered text and a tiny contact link, a gauge showing slow loading, and the same page breaking on a phone." rest={[12, 12]} className={ACC}>
       <Layer x={2} y={3} w={36} h={32} slab faceClassName="![background:#e9e4d8] !border-[#d8d0bd]" style={turn(-2)}>
         <div className="p-[1.1em] font-serif text-[#4a4433]">
           <p className="text-center text-[1.4em] font-bold tracking-wide">WELCOME TO OUR WEBSITE!!</p>
@@ -124,7 +124,7 @@ export function WebsiteFocus() {
     { step: "Follow through", body: <div className="text-[0.85em] text-white/80"><Tick dark="#120f2a" /><p className="mt-[0.4em]">Request received. Confirmation sent by email.</p></div> },
   ];
   return (
-    <Stage label="Illustration: four phone screens fanned like playing cards: arrive, decide, act and follow through." rest={[10, 6]} className={ACC}>
+    <Stage track="section" label="Illustration: four phone screens fanned like playing cards: arrive, decide, act and follow through." rest={[10, 6]} className={ACC}>
       {screens.map((s, i) => (
         <Layer
           key={s.step}
@@ -154,7 +154,7 @@ export function WebsiteFocus() {
 
 export function WebsiteBuilds() {
   return (
-    <Stage label="Illustration: the parts of a website floating around a page outline: a booking calendar, a basket, a content editor, a login, an accessibility check and a fast-loading indicator." rest={[12, -10]} className={ACC}>
+    <Stage track="section" label="Illustration: the parts of a website floating around a page outline: a booking calendar, a basket, a content editor, a login, an accessibility check and a fast-loading indicator." rest={[12, -10]} className={ACC}>
       <Layer x={16} y={5} w={28} h={32} z={0}>
         <div className="absolute inset-0 rounded-[1.2em] border-[0.15em] border-dashed border-white/15" />
         <p className="absolute inset-x-0 top-[45%] text-center text-[0.85em] uppercase tracking-[0.18em] text-white/30">Your site</p>
@@ -210,7 +210,7 @@ export function WebsiteBuilds() {
 
 export function WebsiteClose() {
   return (
-    <Stage label="Illustration: a new website being drawn on a blueprint grid, behind a browser address bar." rest={[10, 12]} className={ACC}>
+    <Stage track="section" label="Illustration: a new website being drawn on a blueprint grid, behind a browser address bar." rest={[10, 12]} className={ACC}>
       <Layer x={4} y={6} w={44} h={32} z={0} slab faceClassName="!bg-[linear-gradient(rgb(150_140_255/0.12)_1px,transparent_1px),linear-gradient(90deg,rgb(150_140_255/0.12)_1px,transparent_1px)] ![background-size:2em_2em] ![background-color:#0c1124]">
         <svg viewBox="0 0 44 32" className="absolute inset-0 h-full w-full" fill="none" stroke="rgb(190 185 255 / 0.55)" strokeWidth="0.2">
           <rect x="3" y="4" width="38" height="3" rx="0.5" />

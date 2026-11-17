@@ -15,7 +15,7 @@ const ACC = "acc-software";
 
 export function SoftwareHero() {
   return (
-    <Stage label="Illustration: one job-management system seen three ways: a manager's overview, an engineer's job list on a phone and a customer's portal showing their job status." rest={[9, -12]} className={ACC}>
+    <Stage track="section" label="Illustration: one job-management system seen three ways: a manager's overview, an engineer's job list on a phone and a customer's portal showing their job status." rest={[9, -12]} className={ACC}>
       <Layer x={1} y={2} w={40} h={26} slab>
         <WindowBar title="Operations · Overview" right={<span className={pill}>Manager</span>} />
         <div className="grid grid-cols-3 gap-[0.7em] p-[1.1em]">
@@ -68,7 +68,7 @@ export function SoftwareHero() {
 export function SoftwareSigns() {
   const cells = Array.from({ length: 30 }, (_, i) => i);
   return (
-    <Stage label="Illustration: a crowded spreadsheet with several near-identical tabs, a note that only one person understands a formula, a broken reference and an email chain asking for a job update." rest={[12, 10]} className={ACC}>
+    <Stage track="section" label="Illustration: a crowded spreadsheet with several near-identical tabs, a note that only one person understands a formula, a broken reference and an email chain asking for a job update." rest={[12, 10]} className={ACC}>
       <Layer x={2} y={3} w={44} h={31} slab faceClassName="is-light">
         <div className="grid h-[calc(100%-2.6em)] grid-cols-6 text-[0.72em] text-black/45">
           {cells.map((i) => (
@@ -105,7 +105,7 @@ export function SoftwareFocus() {
   const panel = "flex h-full flex-col p-[1.2em]";
   const head = "text-[0.8em] font-semibold uppercase tracking-[0.14em] acc-text";
   return (
-    <Stage label="Illustration: three panels standing like a folding screen: operational requirements listing roles, an architecture sketch of data and access, and a product scope splitting version one from later." rest={[8, 0]} className={ACC}>
+    <Stage track="section" label="Illustration: three panels standing like a folding screen: operational requirements listing roles, an architecture sketch of data and access, and a product scope splitting version one from later." rest={[8, 0]} className={ACC}>
       <Layer x={2} y={4} w={18} h={32} z={3} lift={1} slab style={yaw(18)}>
         <div className={panel}>
           <p className={head}>Requirements</p>
@@ -158,7 +158,7 @@ export function SoftwareBuilds() {
     { name: "Extensions", h: 8 },
   ];
   return (
-    <Stage label="Illustration: six modules of different heights standing on one platform: operations, scheduling, portals, dashboards, internal tools and extensions." rest={[16, -14]} className={ACC}>
+    <Stage track="section" label="Illustration: six modules of different heights standing on one platform: operations, scheduling, portals, dashboards, internal tools and extensions." rest={[16, -14]} className={ACC}>
       <Layer x={2} y={30} w={56} h={8} z={0} slab faceClassName="!bg-[linear-gradient(170deg,#18233a,#0d1424)]">
         <div className="flex h-full items-center justify-between px-[1.2em] text-[0.82em]">
           <span className="font-semibold uppercase tracking-[0.16em] acc-text">Your system</span>
@@ -191,7 +191,7 @@ export function SoftwareBuilds() {
 
 export function SoftwareClose() {
   return (
-    <Stage label="Illustration: a pencil sketch of a job board on paper, and the same layout as a finished screen in front of it." rest={[10, -12]} className={ACC}>
+    <Stage track="section" label="Illustration: a pencil sketch of a job board on paper, and the same layout as a finished screen in front of it." rest={[10, -12]} className={ACC}>
       <Layer x={2} y={4} w={30} h={24} z={0} slab faceClassName="is-light" style={turn(-4)}>
         <svg viewBox="0 0 30 24" className="absolute inset-0 h-full w-full" fill="none" stroke="#5a6070" strokeWidth="0.18" strokeDasharray="0.6 0.3">
           <rect x="2" y="2" width="26" height="3" rx="0.6" />

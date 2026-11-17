@@ -21,7 +21,7 @@ export const automationMetadata: Metadata = {
  */
 export default function AutomationServicePage() {
   return (
-    <>
+    <div className="svc-cards contents">
       <StructureReveal />
       <AutoHero />
       <AutoPain />
@@ -30,6 +30,6 @@ export default function AutomationServicePage() {
       <AutoApproach />
       <AutoTrust />
       <AutoClose />
-    </>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SHARE_IMAGE, SITE } from "@/config/site";
 import { AI_PAGE } from "@/config/aiPage";
 import StructureReveal from "@/components/home/StructureReveal";
-import { AiApproach, AiApps, AiClose, AiHero, AiOffers, AiPain, AiTrust } from "./AiSections";
+import { AiAlongside, AiApproach, AiApps, AiClose, AiDiscovery, AiHero } from "./AiSections";
 import "@/components/home/directory/directory.css";
 import "./ai.css";
 
@@ -14,22 +14,21 @@ export const aiMetadata: Metadata = {
 };
 
 /**
- * /solutions/ai -- AI Consulting & Implementation (Plan V1.0 copy). Each
+ * /solutions/ai -- AI Consulting & Implementation (founder copy, Nov 2026). Each
  * section pairs its copy with its own 3D scene beside the text, on the
  * homepage's surfaces, lighting and cursor dot grid.
  * The other service pages keep the shared ServicePage template.
  */
 export default function AiServicePage() {
   return (
-    <>
+    <div className="svc-cards contents">
       <StructureReveal />
       <AiHero />
-      <AiPain />
-      <AiOffers />
+      <AiDiscovery />
       <AiApps />
       <AiApproach />
-      <AiTrust />
+      <AiAlongside />
       <AiClose />
-    </>
+    </div>
   );
 }

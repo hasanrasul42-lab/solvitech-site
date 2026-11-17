@@ -71,7 +71,7 @@ const lines = (ws: string[], tone = "bg-black/[0.12]") => (
 export function HeroVisual({ label }: { label: string }) {
   const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00"];
   return (
-    <Stage label={label} rest={[9, -13]} className="acc-ai">
+    <Stage track="section" label={label} rest={[9, -13]} className="acc-ai">
       {/* The inbox: it arrived. */}
       <Layer x={1} y={3} w={25} h={22} slab>
         <WindowBar title="Inbox" right={<span className="text-[0.8em] text-white/40">3 new</span>} />
@@ -146,7 +146,7 @@ export function PainVisual({ label }: { label: string }) {
   const head = "flex items-center justify-between";
   const title = "text-[1.2em] font-semibold tracking-[-0.01em]";
   return (
-    <Stage label={label} rest={[14, 12]} className="acc-ai">
+    <Stage track="section" label={label} rest={[14, 12]} className="acc-ai">
       {/* 1. The enquiry itself. */}
       <Layer x={4} y={2} w={30} h={20} z={0} slab faceClassName="is-light">
         <div className={`${sheet} text-[#1f2633]`}>
@@ -217,7 +217,7 @@ export function HowVisual({ label }: { label: string }) {
     { name: "Needs review", tone: "#8ab0ff", y: 28, ticket: null },
   ];
   return (
-    <Stage label={label} rest={[16, -6]} className="acc-ai">
+    <Stage track="section" label={label} rest={[16, -6]} className="acc-ai">
       {/* The incoming request. */}
       <Layer x={1} y={15.5} w={15} h={9.5} z={6} lift={2} slab faceClassName="is-light" style={turn(-3)}>
         <div className="p-[1em] text-[#1f2633]">
@@ -257,7 +257,7 @@ export function HowVisual({ label }: { label: string }) {
 
 export function AppsVisual({ label }: { label: string }) {
   return (
-    <Stage label={label} rest={[8, 16]} className="acc-ai">
+    <Stage track="section" label={label} rest={[8, 16]} className="acc-ai">
       {/* Enquiries: a slip gains an owner. */}
       <Layer x={1} y={3} w={19} h={11} z={3} lift={2} slab faceClassName="is-light" style={turn(-4)}>
         <div className="p-[1em] text-[#1f2633]">
@@ -326,7 +326,7 @@ export function ApproachVisual({ label }: { label: string }) {
   const col = "text-[0.78em] font-semibold uppercase tracking-[0.16em] text-white/40";
   const card = "rounded-[0.4em] px-[0.7em] py-[0.55em] text-[0.85em] leading-tight";
   return (
-    <Stage label={label} rest={[6, -14]} className="acc-ai">
+    <Stage track="section" label={label} rest={[6, -14]} className="acc-ai">
       {/* The board. */}
       <Layer x={1} y={2} w={58} h={32} slab faceClassName="!bg-[linear-gradient(165deg,#151e30,#0c1322)]">
         <div className="grid h-full grid-cols-3 gap-[1em] p-[1.3em]">
@@ -387,7 +387,7 @@ export function TrustVisual({ label }: { label: string }) {
     { id: "#1042", title: "Site visit", tag: "Progressed", tone: TEAL, x: 39, y: 8, z: 8, r: 7 },
   ];
   return (
-    <Stage label={label} rest={[12, 14]} className="acc-ai">
+    <Stage track="section" label={label} rest={[12, 14]} className="acc-ai">
       {/* The status register. */}
       <Layer x={1} y={8} w={18} h={23.5} slab>
         <WindowBar title="Status" />
@@ -439,7 +439,7 @@ export function TrustVisual({ label }: { label: string }) {
 
 export function CloseVisual({ label }: { label: string }) {
   return (
-    <Stage label={label} rest={[10, -10]} className="acc-ai">
+    <Stage track="section" label={label} rest={[10, -10]} className="acc-ai">
       {/* An open diary, behind. */}
       <Layer x={30} y={5} w={28} h={24} z={0} slab>
         <div className="grid h-full grid-cols-2">

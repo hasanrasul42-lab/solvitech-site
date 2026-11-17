@@ -24,6 +24,7 @@ export default function Stage({
   rest,
   className = "",
   view,
+  track = "stage",
   children,
 }: {
   /** What the illustration shows, for assistive technology. */
@@ -33,6 +34,12 @@ export default function Stage({
   className?: string;
   /** Optional named state (e.g. desktop / mobile) for the visual's own CSS. */
   view?: string;
+  /**
+   * What the pointer tilt is measured against: the visual itself (homepage),
+   * or its whole section, so the model follows the cursor across the section
+   * instead of saturating once the cursor leaves it (service pages).
+   */
+  track?: "stage" | "section";
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +48,10 @@ export default function Stage({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const host = el.closest<HTMLElement>("[data-svc]") ?? el;
+    // The area that drives the tilt and emphasis: the whole <section> when
+    // following a section (so cards and panels inside it never cut it short),
+    // otherwise the service row it belongs to.
+    const host = (track === "section" ? el.closest<HTMLElement>("section") : null) ?? el.closest<HTMLElement>("[data-svc]") ?? el;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -49,6 +59,8 @@ export default function Stage({
     // (and the floor), never as inherited CSS variables, so a frame restyles
     // two elements rather than every layer. The stage is measured at most
     // once per frame, never per pointer event.
+    // Tilt range in degrees: a little wider when following a whole section.
+    const [ax, ay] = track === "section" ? [6, 9] : [4, 6];
     const scene = el.querySelector<HTMLElement>(".s3d-scene");
     const floor = el.querySelector<HTMLElement>(".s3d-floor");
     let tx = 0;
@@ -73,7 +85,7 @@ export default function Stage({
       raf = 0;
       if (pending) {
         pending = false;
-        const r = el.getBoundingClientRect();
+        const r = (track === "section" ? host : el).getBoundingClientRect();
         tx = Math.max(-1, Math.min(1, ((cx - r.left) / r.width) * 2 - 1));
         ty = Math.max(-1, Math.min(1, ((cy - r.top) / r.height) * 2 - 1));
       }
@@ -82,7 +94,7 @@ export default function Stage({
       const k = 1 - Math.exp(-dt * 7);
       x += (tx - x) * k;
       y += (ty - y) * k;
-      if (scene) scene.style.transform = `rotateX(${(rx0 - y * 4).toFixed(3)}deg) rotateY(${(ry0 + x * 6).toFixed(3)}deg)`;
+      if (scene) scene.style.transform = `rotateX(${(rx0 - y * ax).toFixed(3)}deg) rotateY(${(ry0 + x * ay).toFixed(3)}deg)`;
       if (floor) floor.style.transform = `translateX(${(-x * 1.2).toFixed(3)}em)`;
       if (Math.abs(tx - x) + Math.abs(ty - y) > 0.002) raf = requestAnimationFrame(frame);
       else last = 0;
@@ -146,7 +158,7 @@ export default function Stage({
       fine.removeEventListener("change", sync);
       cancelAnimationFrame(raf);
     };
-  }, [rx0, ry0]);
+  }, [rx0, ry0, track]);
 
   return (
     <div

@@ -31,7 +31,7 @@ export default function ServiceStory({ slug, accent, visuals }: { slug: ServiceS
   const id = (k: string) => `${slug}-${k}`;
   const feature = s.feature;
   return (
-    <>
+    <div className="svc-cards contents">
       <StructureReveal />
 
       {/* 01 Hero */}
@@ -254,6 +254,6 @@ export default function ServiceStory({ slug, accent, visuals }: { slug: ServiceS
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
