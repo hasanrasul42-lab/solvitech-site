@@ -1,15 +1,7 @@
-import { serviceMetadata } from "@/components/solutions/ServicePage";
-import ServiceStory from "@/components/solutions/story/ServiceStory";
-import { WebsiteBuilds, WebsiteClose, WebsiteFocus, WebsiteHero, WebsiteSigns } from "@/components/solutions/story/WebsiteVisuals";
+import WebsitesServicePage, { websitesMetadata } from "@/components/solutions/websites/WebsitesServicePage";
 
-export const metadata = serviceMetadata("websites");
+export const metadata = websitesMetadata;
 
 export default function WebsitesPage() {
-  return (
-    <ServiceStory
-      slug="websites"
-      accent="150 140 255"
-      visuals={{ hero: <WebsiteHero />, signs: <WebsiteSigns />, focus: <WebsiteFocus />, builds: <WebsiteBuilds />, close: <WebsiteClose /> }}
-    />
-  );
+  return <WebsitesServicePage />;
 }
